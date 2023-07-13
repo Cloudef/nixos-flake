@@ -565,7 +565,7 @@ in {
       windowrulev2 = float, title:^(Open Files)$
 
       bind = SUPER, Q, killactive,
-      bind = SUPER, F, fullscreen,
+      bind = SUPER SHIFT, F, fullscreen,
       bind = SUPER SHIFT, G, togglegroup,
       bind = SUPER SHIFT, N, changegroupactive, f
       bind = SUPER SHIFT, P, changegroupactive, b
