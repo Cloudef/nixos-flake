@@ -559,6 +559,7 @@ in {
       # Firefox PiP
       windowrulev2 = float, title:^(Picture-in-Picture)$
       windowrulev2 = pin, title:^(Picture-in-Picture)$
+      windowrulev2 = float, title:^(Open Files)$
 
       bind = SUPER, Q, killactive,
       bind = SUPER, F, fullscreen,
