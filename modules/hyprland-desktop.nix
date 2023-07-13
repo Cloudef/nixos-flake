@@ -606,7 +606,6 @@ in {
       ${cfg.extraConfig}
       '';
 
-
     programs.xwayland.enable = true;
     security.polkit.enable = true;
     xdg.portal.enable = true;
