@@ -378,15 +378,15 @@ in {
           (metric :label "CPU ''${round(EWW_TEMPS["NCT6798_TSI0_TEMP"], 0)}°C"
                   :value {round(EWW_CPU.avg, 0)}
                   :onchange "")
-          (metric :label "VOL"
-                  :value {volume}
-                  :onchange "${concatStringsSep " " cfg.volumeSetCmd} {}")
           (metric :label "RAM"
                   :value {EWW_RAM.used_mem_perc}
                   :onchange "")
           (metric :label "DSK"
                   :value {EWW_DISK["/"].used_perc}
                   :onchange "")
+          (metric :label "VOL"
+                  :value {volume}
+                  :onchange "${concatStringsSep " " cfg.volumeSetCmd} {}")
           {formattime(EWW_TIME, "%b %d, %Y   %H:%M:%S")}))
 
       (defwidget workspaces []
@@ -477,7 +477,7 @@ in {
       }
 
       .sidestuff {
-        padding-right: 8px;
+        padding-right: 24px;
       }
       '';
 
