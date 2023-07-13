@@ -1,5 +1,8 @@
 { config, lib, pkgs, inputs, users, ... }:
 with lib;
+# TODO: eww window for logout shutdown and reboot
+# TODO: test eww fork with system tray
+# TODO: theme dunst
 let
   cfg = config.programs.hyprland-desktop;
 

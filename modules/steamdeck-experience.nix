@@ -1,5 +1,8 @@
 { config, lib, pkgs, inputs, ... }:
 with lib;
+# TODO: Close steam-gamescope when selecting "Switch to desktop"
+# TODO: If steam tries to restart itself, it gets stuck due to Mangoapp not dying...
+# XXX: https://github.com/ValveSoftware/steam-for-linux/issues/9705
 let
   steam-mod = (pkgs.steam.override {
     extraPkgs = pkgs: [
