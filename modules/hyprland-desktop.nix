@@ -60,6 +60,17 @@ let
     '';
   };
 
+  ja-en-translator = pkgs.writeShellApplication {
+    name = "ja-en-translator";
+    runtimeInputs = with pkgs; [ hyprshot tesseract translate-shell notify-desktop ];
+    # TODO: hardcoded DPI
+    text = ''
+      hyprshot -m region --raw | tesseract --dpi 109 --psm 6 -l jpn - - | \
+        trans -show-original-phonetics n --show-translation-phonetics n --show-prompt-message n --show-languages n -no-ansi >/tmp/translation
+      notify-desktop  "$(cat /tmp/translation)" >/dev/null
+      '';
+  };
+
   pipewire-event-handler = pkgs.writeShellApplication {
     name = "pipewire-event-handler";
     runtimeInputs = with pkgs; [ pulseaudio hyprland config.programs.eww.wrappedPackage gnugrep ];
@@ -351,6 +362,15 @@ in {
     nix.settings.substituters = mkBefore ["https://hyprland.cachix.org"];
     nix.settings.trusted-public-keys = mkBefore ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
 
+    environment.systemPackages = with pkgs; [
+      cfg.cursorThemePackage
+      hyprshot
+      wl-clipboard
+      imv
+      wbg
+      ja-en-translator
+    ];
+
     # TODO: temps are hardcoded
     programs.eww.enable = true;
     programs.eww.yuck = ''
@@ -481,14 +501,6 @@ in {
       }
       '';
 
-    environment.systemPackages = with pkgs; [
-      cfg.cursorThemePackage
-      hyprshot
-      wl-clipboard
-      imv
-      wbg
-    ];
-
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
     environment.sessionVariables.QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
     environment.etc."xdg/hyprland.conf".mode = "0444";
@@ -597,6 +609,7 @@ in {
       bind = SUPER SHIFT, O, exec, ${hyprshot}/bin/hyprshot -m output -o ~/misc/screenshots
       bind = SUPER SHIFT, W, exec, ${hyprshot}/bin/hyprshot -m window -o ~/misc/screenshots
       bind = SUPER SHIFT, R, exec, ${hyprshot}/bin/hyprshot -m region -o ~/misc/screenshots
+      bind = SUPER SHIFT, T, exec, ${ja-en-translator}/bin/ja-en-translator
       '' + concatMapStringsSep "\n" (x: "bind = " + x) cfg.extraKeyBindings + ''
 
       bindm = SUPER, mouse:272, movewindow
