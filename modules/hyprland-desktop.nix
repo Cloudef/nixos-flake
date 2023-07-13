@@ -129,6 +129,11 @@ let
             activewindow)
               ;;
             activewindowv2)
+              if [[ "$(hyprctl activewindow -j | jaq -r .fullscreen)" == "true" ]]; then
+                hyprctl dispatch exec eww close bar >/dev/null
+              else
+                hyprctl dispatch exec eww open bar >/dev/null
+              fi
               hyprctl dispatch exec eww update window="$arg1" >/dev/null
               ;;
             fullscreen)
