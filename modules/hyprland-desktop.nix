@@ -21,6 +21,45 @@ let
     };
   in "${wrapped}/bin/hyprland-terminal-autocd";
 
+  hyprshot = pkgs.stdenv.mkDerivation {
+    name = "hyprshot";
+    version = "0.0.1";
+    buildInputs = [ pkgs.makeWrapper ];
+    src = pkgs.fetchFromGitHub {
+      owner = "Gustash";
+      repo = "Hyprshot";
+      rev = "9d9df540409f4587a04324aaefec24a7224f83dc";
+      hash = "sha256-f4fMIS3B01F090Cs3R846HwQsmFvdzx8w3ubPi06S5o=";
+    };
+
+    dontPatchELF = true;
+    dontPatch = true;
+    dontConfigure = true;
+    dontBuild = true;
+    dontStrip = true;
+
+    installPhase = ''
+      mkdir -p $out/bin
+      install -m755 hyprshot $out/bin/hyprshot
+      '';
+
+    postFixup = with pkgs; ''
+      wrapProgram $out/bin/hyprshot \
+      --set PATH ${lib.makeBinPath [
+        coreutils
+        gnugrep
+        getopt
+        jq
+        slurp
+        grim
+        wl-clipboard
+        libnotify
+        imagemagick
+        hyprland
+      ]}
+    '';
+  };
+
   pipewire-event-handler = pkgs.writeShellApplication {
     name = "pipewire-event-handler";
     runtimeInputs = with pkgs; [ pulseaudio hyprland config.programs.eww.wrappedPackage gnugrep ];
@@ -442,46 +481,7 @@ in {
       }
       '';
 
-    environment.systemPackages = let
-      hyprshot = pkgs.stdenv.mkDerivation {
-        name = "hyprshot";
-        version = "0.0.1";
-        buildInputs = [ pkgs.makeWrapper ];
-        src = pkgs.fetchFromGitHub {
-          owner = "Gustash";
-          repo = "Hyprshot";
-          rev = "9d9df540409f4587a04324aaefec24a7224f83dc";
-          hash = "sha256-f4fMIS3B01F090Cs3R846HwQsmFvdzx8w3ubPi06S5o=";
-        };
-
-        dontPatchELF = true;
-        dontPatch = true;
-        dontConfigure = true;
-        dontBuild = true;
-        dontStrip = true;
-
-        installPhase = ''
-          mkdir -p $out/bin
-          install -m755 hyprshot $out/bin/hyprshot
-          '';
-
-        postFixup = with pkgs; ''
-          wrapProgram $out/bin/hyprshot \
-          --set PATH ${lib.makeBinPath [
-            coreutils
-            gnugrep
-            getopt
-            jq
-            slurp
-            grim
-            wl-clipboard
-            libnotify
-            imagemagick
-            hyprland
-          ]}
-        '';
-      };
-    in with pkgs; [
+    environment.systemPackages = with pkgs; [
       cfg.cursorThemePackage
       hyprshot
       wl-clipboard
@@ -594,6 +594,9 @@ in {
       bind = ,XF86AudioMute, exec, ${concatStringsSep " " cfg.volumeMuteCmd}
       bind = SUPER, P, exec, ${concatStringsSep " " cfg.launcherCmd}
       bind = SUPER SHIFT, return, exec, ${terminal-autocd-cmd}
+      bind = SUPER SHIFT, O, exec, ${hyprshot}/bin/hyprshot -m output -o ~/misc/screenshots
+      bind = SUPER SHIFT, W, exec, ${hyprshot}/bin/hyprshot -m window -o ~/misc/screenshots
+      bind = SUPER SHIFT, R, exec, ${hyprshot}/bin/hyprshot -m region -o ~/misc/screenshots
       '' + concatMapStringsSep "\n" (x: "bind = " + x) cfg.extraKeyBindings + ''
 
       bindm = SUPER, mouse:272, movewindow
