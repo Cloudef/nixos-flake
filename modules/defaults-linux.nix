@@ -83,11 +83,35 @@ with lib;
 
   environment.etc."pipewire/pipewire.conf.d/92-low-latency.conf".text = ''
     context.properties = {
+      default.clock.rate = 48000
       default.clock.quantum = 128
       default.clock.min-quantum = 128
       default.clock.max-quantum = 128
     }
     '';
+
+  environment.etc."pipewire/pipewire-pulse.d/92-low-latency.conf".source = (pkgs.formats.json {}).generate "92-low-latency.conf" {
+    context.exec = [
+      # switch audio device automatically (e.g. bluetooth headphones)
+      { path = "${pkgs.pulseaudio}/bin/pactl"; args = "load-module module-switch-on-connect"; }
+    ];
+    context.modules = [
+      {
+        name = "libpipewire-module-protocol-pulse";
+        args = {
+          pulse.min.req = "128/48000";
+          pulse.default.req = "128/48000";
+          pulse.max.req = "128/48000";
+          pulse.min.quantum = "128/48000";
+          pulse.max.quantum = "128/48000";
+        };
+      }
+    ];
+    stream.properties = {
+      node.latency = "128/48000";
+      resample.quality = 1;
+    };
+  };
 
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
