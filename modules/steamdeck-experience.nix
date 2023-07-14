@@ -1,17 +1,17 @@
 { config, lib, pkgs, inputs, ... }:
 with lib;
 # TODO: Close steam-gamescope when selecting "Switch to desktop"
-# TODO: If steam tries to restart itself, it gets stuck due to Mangoapp not dying...
+# TOOD: Remove hardcoded gamescope width, height and inactive framerate
 # XXX: https://github.com/ValveSoftware/steam-for-linux/issues/9705
 let
   steam-mod = (pkgs.steam.override {
-    extraPkgs = pkgs: [
+    extraPkgs = pkgs: with pkgs; [
       # steamdeck first boot wizard skip
-      (pkgs.writeScriptBin "steamos-polkit-helpers/steamos-update" ''
+      (writeScriptBin "steamos-polkit-helpers/steamos-update" ''
         #!${pkgs.stdenv.shell}
         exit 7
       '')
-      pkgs.gamemode
+      gamemode
     ];
   });
 
@@ -24,13 +24,56 @@ let
     };
   in pkgs.writeShellApplication {
     name = "steam-gamescope";
-    runtimeInputs = with pkgs; [ procps gamemode steam-mod steam-mod.run gamescope mangohud ];
+    runtimeInputs = with pkgs; [ coreutils procps inotify-tools gnugrep gnused file gamemode steam-mod steam-mod.run gamescope mangohud ];
     text = ''
-      if pgrep '^gamescope'; then
+      if pgrep '^PluginLoader' >/dev/null; then
+        echo "steam-gamescope is already running"
         exit 0
       fi
 
+      tmpdir="$(mktemp -d)"
+      trap 'rm -rf "$tmpdir"' EXIT
+
+      patch_plug() {
+        if [[ "$(file --dereference --mime "$@")" != *"binary" ]]; then
+          # do not use -i because of the inotifywait
+          local tmp; tmp="$(mktemp)"
+          sed "s,/home/deck/homebrew,$HOME/.steam/deckyloader,g" "$@" > "$tmp"
+          sed -i "s,/home/deck/,$HOME/,g" "$tmp"
+          if ! cmp --silent "$tmp" "$@"; then
+            printf -- "patching '%s'\n" "$@"
+            cp -f "$tmp" "$@"
+          fi
+          rm -f "$tmp"
+        fi
+      }
+
+      # patch badly written plugins and fix permissions initally
+      chmod -R u=rwX,go=rX "$HOME"/.steam/deckyloader
+      (grep -rlF '/home/deck/' "$HOME"/.steam/deckyloader/plugins || true) | while read -r path; do patch_plug "$path"; done
+
+      mkfifo "$tmpdir"/inotify.fifo
+      inotifywait --monitor -e create -e modify -e attrib -qr "$HOME"/.steam/deckyloader --exclude "$HOME"/.steam/deckyloader/services -o "$tmpdir"/inotify.fifo &
+      inotifypid=$!
+
+      # hack to automatically patch plugins and manage perms
+      set +e
+      while read -r dir event base; do
+        file="$dir$base"
+        if [[ "$event" == "ATTRIB"* ]]; then
+          if [[ -d "$file" ]]; then
+            [[ "$(stat -c '%a' "$file")" != "755" ]] && chmod -v 755 "$file"
+          else
+            [[ "$(stat -c '%a' "$file")" != "644" ]] && chmod -v 644 "$file"
+          fi
+        elif [[ -f "$file" ]]; then
+          patch_plug "$file"
+        fi
+      done &> "$HOME"/.steam/deckyloader/services/inotifywait.log < "$tmpdir"/inotify.fifo &
+      set -e
+
       # has to be a copy, symlink makes PluginLoader look up files from wrong directory
+      rm -f "$HOME"/.steam/deckyloader/services/PluginLoader
       cp -f ${deckyloader} "$HOME"/.steam/deckyloader/services/PluginLoader
       (cd "$HOME"/.steam/deckyloader/services; steam-run ./PluginLoader &> PluginLoader.log) &
       touch "$HOME"/.steam/steam/.cef-enable-remote-debugging
@@ -70,14 +113,21 @@ let
       export vk_xwayland_wait_ready=false
       export WINEDLLOVERRIDES=dxgi=n
 
-      gamemoderun gamescope --xwayland-count 2 --fade-out-duration 200 -W 2560 -H 1440 -o 60 --hide-cursor-delay 3000 --max-scale 2 --steam --fullscreen -- ${pkgs.stdenv.shell} -c 'mangoapp& steam -gamepadui -steamos3 -steampal -steamdeck' &> "$HOME"/.steam/deckyloader/services/gamescope.log
+      set +e
+      # shellcheck disable=SC2016
+      gamemoderun gamescope -W 2560 -H 1440 -o 60 --max-scale 2 \
+        --fullscreen --fade-out-duration 200 --hide-cursor-delay 3000 \
+        --xwayland-count 2 --steam -- ${pkgs.stdenv.shell} -c \
+        'mangoapp& mpid=$!; steam -gamepadui -steamos3 -steampal -steamdeck; kill "$mpid"' \
+        &> "$HOME"/.steam/deckyloader/services/gamescope.log
+      ret=$?
+      set -e
 
-      pgrep '^mangoapp' | while read -r pid; do
-        kill -15 "$pid"
-      done
-      pgrep '^PluginLoader' | while read -r pid; do
-        kill -SIGKILL "$pid"
-      done
+      pgrep '^PluginLoader' | while read -r pid; do kill -SIGKILL "$pid" || true; done
+      pkill -P "$BASHPID" mangoapp || true
+      pkill -P "$BASHPID" steam || true
+      kill "$inotifypid" || true
+      exit $ret
       '';
   };
 
@@ -91,12 +141,18 @@ let
       export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
       export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export LANG="''${LC_ALL:-ja_JP.utf8}"
+      set +e
       XKB_DEFAULT_LAYOUT="${config.console.keyMap}" \
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0 \
       vk_xwayland_wait_ready=false \
       WINEDLLOVERRIDES=dxgi=n \
-        gamemoderun gamescope --fade-out-duration 200 -W 2560 -H 1440 -o 60 --hide-cursor-delay 3000 --max-scale 2 --fullscreen "$GAMESCOPE_SCALER" -- steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
-      pkill explorer.exe
+        gamemoderun gamescope -W 2560 -H 1440 -o 60 --max-scale 2 \
+          --fullscreen --hide-cursor-delay 3000 --fade-out-duration 200 "$GAMESCOPE_SCALER" -- \
+          steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
+      ret=$?
+      set -e
+      pkill -P "$BASHPID" explorer.exe
+      exit $ret
       '';
   };
 in {
