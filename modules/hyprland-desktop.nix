@@ -667,6 +667,30 @@ in {
         Install.WantedBy = [ "hyprland-session.target" ];
       };
 
+      # https://github.com/alex-courtis/way-displays/issues/117
+      systemd.user.services.way-displays = let
+        adapters = filter (v: v != "") (splitString "\n" (builtins.readFile (pkgs.runCommandLocal "list-adapters" {
+          __noChroot = true;
+        } ''
+          find /sys/devices -name "edid" -printf "%h\n" | while read -r path; do
+            base="''${path##*/}"
+            printf '%s\n' "''${base/card?-}"
+          done > $out
+          '')));
+        config = pkgs.writeText "config.yaml" (''
+          AUTO_SCALE: false
+          '' + concatMapStringsSep "\n" (adp: ''
+          MODE:
+            - NAME_DESC: ${adp}
+              MAX: true
+          '') adapters);
+      in mkIf (cfg.monitors == []) {
+        Unit.Description = "Wayland automatic display manager";
+        Service.ExecStart = "${pkgs.way-displays}/bin/way-displays --config ${config}";
+        Service.Restart = "on-failure";
+        Install.WantedBy = [ "hyprland-session.target" ];
+      };
+
       systemd.user.services.dunst = {
         Unit.Description = "Dunst notification daemon";
         Service.ExecStart = "${pkgs.dunst}/bin/dunst";

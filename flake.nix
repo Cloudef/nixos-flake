@@ -39,9 +39,6 @@
           ./modules/sunshine.nix
           ({config, pkgs, ...}: {
             programs.hyprland-desktop.enable = true;
-            programs.hyprland-desktop.monitors = [
-              "HDMI-A-1,2560x1440@75,0x0,1"
-            ];
             programs.sunshine.enable = true;
             programs.sunshine.users = [ "nix" ];
             programs.sunshine.apps = [
