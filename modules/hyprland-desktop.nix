@@ -518,9 +518,9 @@ in {
       exec-once = ${config.programs.eww.wrappedPackage}/bin/eww open bar
       exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && systemctl --user start hyprland-session.target
     '' + concatStringsSep "\n" (
-      map (x: "exec-once = " + (concatStringsSep " " x)) cfg.extraExecOnce ++
-      map (x: "exec = " + (concatStringsSep " " x)) cfg.extraExec ++
-      map (x: "monitor = " + x) cfg.monitors
+      map (x: "exec-once = ${concatStringsSep " " x}") cfg.extraExecOnce ++
+      map (x: "exec = ${concatStringsSep " " x}") cfg.extraExec ++
+      map (x: "monitor = ${x}") cfg.monitors
     ) + ''
 
       input {
@@ -621,11 +621,11 @@ in {
       bind = SUPER SHIFT, W, exec, ${hyprshot}/bin/hyprshot -m window -o ~/misc/screenshots
       bind = SUPER SHIFT, R, exec, ${hyprshot}/bin/hyprshot -m region -o ~/misc/screenshots
       bind = SUPER SHIFT, T, exec, ${ja-en-translator}/bin/ja-en-translator
-      '' + concatMapStringsSep "\n" (x: "bind = " + x) cfg.extraKeyBindings + ''
+      '' + concatMapStringsSep "\n" (x: "bind = ${x}") cfg.extraKeyBindings + ''
 
       bindm = SUPER, mouse:272, movewindow
       bindm = SUPER, mouse:273, resizewindow
-      '' + concatMapStringsSep "\n" (x: "bindm = " + x) cfg.extraMouseBindings + ''
+      '' + concatMapStringsSep "\n" (x: "bindm = ${x}") cfg.extraMouseBindings + ''
 
       ${cfg.extraConfig}
       '';
