@@ -21,6 +21,8 @@ with lib;
   # We in Tokyo
   time.timeZone = "Asia/Tokyo";
 
+  environment.sessionVariables.BEMENU_OPTS = "-H 32 --cw 2 --ch 2";
+
   # Home stuff that works everywhere
   home-manager.users = let
     rootConfig = config;

@@ -234,7 +234,7 @@ in {
 
     launcherCmd = mkOption {
       type = types.listOf types.str;
-      default = [ "${pkgs.bemenu}/bin/bemenu-run" "-H" "32" ];
+      default = [ "${pkgs.bemenu}/bin/bemenu-run" ];
       description = mdDoc ''
         The command used for the launcher.
         '';
