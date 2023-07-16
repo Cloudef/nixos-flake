@@ -80,6 +80,7 @@ let
       hyprctl dispatch exec eww update volume="$cvol" >/dev/null
       # shellcheck disable=SC2034
       while read -r _ event _ type num; do
+        test "$(eww ping)" = "pong" || exit 1
         # https://github.com/hyprwm/Hyprland/issues/2695
         test -e "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
         case "$event" in
@@ -114,6 +115,7 @@ let
       while true; do
         # https://github.com/hyprwm/Hyprland/issues/2695
         test -e "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
+        test "$(eww ping)" = "pong" || exit 1
         socat -U -t 3600 - "UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while read -r line; do
           event="''${line/>>*/}"
           args="''${line/*>>/}"
