@@ -668,7 +668,7 @@ in {
       };
 
       systemd.user.services.dunst = {
-        Unit.Description = "Hyprland event handler";
+        Unit.Description = "Dunst notification daemon";
         Service.ExecStart = "${pkgs.dunst}/bin/dunst";
         Service.Restart = "on-failure";
         Install.WantedBy = [ "hyprland-session.target" ];
