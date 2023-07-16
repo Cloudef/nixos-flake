@@ -586,6 +586,7 @@ in {
 
       # Gamescope
       windowrulev2 = fullscreen,class:(.gamescope-wrapped)
+      windowrulev2 = tile,class:(.gamescope-wrapped)
 
       bind = SUPER, Q, killactive,
       bind = SUPER SHIFT, F, fullscreen,
