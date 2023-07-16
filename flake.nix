@@ -16,12 +16,14 @@
         git.name = "Jari Vetoniemi";
         git.email = "jari.vetoniemi@cloudef.pw";
       };
+
       users.nix = {
         uid = 1000;
         groups = [ "wheel" ];
         git.name = "Jari Vetoniemi";
         git.email = "jari.vetoniemi@cloudef.pw";
       };
+
       mainUser = "nix";
     in {
       nixos-linux = let
