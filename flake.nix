@@ -39,6 +39,7 @@
           ./modules/sunshine.nix
           ({config, pkgs, ...}: {
             programs.hyprland-desktop.enable = true;
+            programs.steamdeck-experience.enable = true;
             programs.sunshine.enable = true;
             programs.sunshine.users = [ "nix" ];
             programs.sunshine.apps = [

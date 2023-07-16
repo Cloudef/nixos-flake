@@ -1,9 +1,10 @@
 { config, lib, pkgs, inputs, ... }:
 with lib;
 # TODO: Close steam-gamescope when selecting "Switch to desktop"
-# TOOD: Remove hardcoded gamescope width, height and inactive framerate
 # XXX: https://github.com/ValveSoftware/steam-for-linux/issues/9705
 let
+  cfg = config.programs.steamdeck-experience;
+
   steam-mod = (pkgs.steam.override {
     extraPkgs = pkgs: with pkgs; [
       # steamdeck first boot wizard skip
@@ -115,11 +116,16 @@ let
 
       set +e
       # shellcheck disable=SC2016
-      gamemoderun gamescope -W 2560 -H 1440 -o 60 --max-scale 2 \
-        --fullscreen --fade-out-duration 200 --hide-cursor-delay 3000 \
-        --xwayland-count 2 --steam -- ${pkgs.stdenv.shell} -c \
-        'mangoapp& mpid=$!; steam -gamepadui -steamos3 -steampal -steamdeck; kill "$mpid"' \
-        &> "$HOME"/.steam/deckyloader/services/gamescope.log
+      gamemoderun gamescope --fullscreen --xwayland-count 2 \
+        -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
+        -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
+        -o ${toString cfg.unfocusedFramerate} \
+        --max-scale ${toString cfg.maxScale} \
+        --hide-cursor-delay ${toString cfg.hideCursorDelay} \
+        --fade-out-duration ${toString cfg.fadeOutDuration} \
+        --steam -- ${pkgs.stdenv.shell} -c \
+          'mangoapp& mpid=$!; steam -gamepadui -steamos3 -steampal -steamdeck; kill "$mpid"' \
+          &> "$HOME"/.steam/deckyloader/services/gamescope.log
       ret=$?
       set -e
 
@@ -146,9 +152,14 @@ let
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0 \
       vk_xwayland_wait_ready=false \
       WINEDLLOVERRIDES=dxgi=n \
-        gamemoderun gamescope -W 2560 -H 1440 -o 60 --max-scale 2 \
-          --fullscreen --hide-cursor-delay 3000 --fade-out-duration 200 "$GAMESCOPE_SCALER" -- \
-          steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
+        gamemoderun gamescope --fullscreen -F fsr \
+          -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
+          -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
+          -o ${toString cfg.unfocusedFramerate} \
+          --max-scale ${toString cfg.maxScale} \
+          --hide-cursor-delay ${toString cfg.hideCursorDelay} \
+          --fade-out-duration ${toString cfg.fadeOutDuration} \
+          "$GAMESCOPE_SCALER" -- steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
       ret=$?
       set -e
       pkill -P "$BASHPID" explorer.exe
@@ -156,9 +167,46 @@ let
       '';
   };
 in {
-  environment.systemPackages = [
-    steam-mod
-    steam-gamescope
-    proton
-  ];
+  options.programs.steamdeck-experience = {
+    enable = mkEnableOption (mdDoc "steamdeck-experience");
+
+    resolution = mkOption {
+      type = types.attrs;
+      default = { width = 2560; height = 1440; };
+    };
+
+    # use 4K internal res by default, we downscale to 1440p
+    internalResolution = mkOption {
+      type = types.attrs;
+      default = { width = 3840; height = 2160; };
+    };
+
+    unfocusedFramerate = mkOption {
+      type = types.number;
+      default = 60;
+    };
+
+    maxScale = mkOption {
+      type = types.number;
+      default = 2;
+    };
+
+    hideCursorDelay = mkOption {
+      type = types.number;
+      default = 3000;
+    };
+
+    fadeOutDuration = mkOption {
+      type = types.number;
+      default = 200;
+    };
+  };
+
+  config = mkIf cfg.enable {
+    environment.systemPackages = [
+      steam-mod
+      steam-gamescope
+      proton
+    ];
+  };
 }
