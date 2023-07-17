@@ -19,6 +19,8 @@ with lib;
   # neovim.nix aliases do not seem to apply, so fix here
   programs.fish.interactiveShellInit = ''
     alias vim="nvim"
+    # TODO: we probably do not need this as nixpkgs already has flutter
+    PATH="$PATH:$HOME/dev/flutter/bin"
     '';
 
   system.defaults = {
@@ -31,6 +33,8 @@ with lib;
     NSGlobalDomain."com.apple.swipescrolldirection" = false;
     screencapture.location = "/tmp";
   };
+
+  environment.variables.JAVA_HOME = "/Applications/Android Studio.app/Contents/jre/Contents/Home";
 
   nixpkgs.overlays = [(final: prev: {
     # TODO: add to nixpkgs upstream
