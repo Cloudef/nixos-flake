@@ -29,6 +29,8 @@ with lib;
     fileSystems = [ "/" ];
   };
 
+  boot.tmp.useTmpfs = true;
+
   zramSwap.enable = true;
   zramSwap.algorithm = "zstd";
 
