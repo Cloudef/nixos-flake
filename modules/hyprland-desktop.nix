@@ -13,7 +13,7 @@ let
       name = "hyprland-terminal-autocd";
       runtimeInputs = with pkgs; [ procps cfg.package jaq ];
       text = ''
-        if read -r _ cwd < <((pwdx "$(pgrep -P "$(hyprctl activewindow -j | jaq -r .pid)")") 2>dev/null); then
+        if read -r _ cwd < <((pwdx "$(pgrep -P "$(hyprctl activewindow -j | jaq -r .pid)")") 2>/dev/null); then
           cd "$cwd"
         fi
         ${concatStringsSep " " cfg.terminalCmd} "$@"
