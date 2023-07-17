@@ -1,6 +1,5 @@
 { config, lib, pkgs, inputs, ... }:
 with lib;
-# TODO: Close steam-gamescope when selecting "Switch to desktop"
 # XXX: https://github.com/ValveSoftware/steam-for-linux/issues/9705
 let
   cfg = config.programs.steamdeck-experience;
@@ -11,6 +10,11 @@ let
       (writeScriptBin "steamos-polkit-helpers/steamos-update" ''
         #!${pkgs.stdenv.shell}
         exit 7
+      '')
+      # switch to desktop
+      (writeScriptBin "steamos-session-select" ''
+        #!${pkgs.stdenv.shell}
+        kill $PPID
       '')
       gamemode
     ];
