@@ -29,7 +29,6 @@ with lib;
     finder.AppleShowAllExtensions = true;
     finder._FXShowPosixPathInTitle = true;
     finder.FXEnableExtensionChangeWarning = false;
-    NSGlobalDomain._HIHideMenuBar = true;
     NSGlobalDomain."com.apple.swipescrolldirection" = false;
     screencapture.location = "/tmp";
   };
