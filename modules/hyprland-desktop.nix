@@ -11,7 +11,7 @@ let
   terminal-autocd-cmd = let
     wrapped = pkgs.writeShellApplication {
       name = "hyprland-terminal-autocd";
-      runtimeInputs = with pkgs; [ procps hyprland jaq ];
+      runtimeInputs = with pkgs; [ procps cfg.package jaq ];
       text = ''
         if read -r _ cwd < <((pwdx "$(pgrep -P "$(hyprctl activewindow -j | jaq -r .pid)")") 2>dev/null); then
           cd "$cwd"
@@ -55,7 +55,7 @@ let
         wl-clipboard
         libnotify
         imagemagick
-        hyprland
+        cfg.package
       ]}
     '';
   };
@@ -73,7 +73,7 @@ let
 
   pipewire-event-handler = pkgs.writeShellApplication {
     name = "pipewire-event-handler";
-    runtimeInputs = with pkgs; [ pulseaudio hyprland config.programs.eww.wrappedPackage gnugrep ];
+    runtimeInputs = with pkgs; [ pulseaudio cfg.package config.programs.eww.wrappedPackage gnugrep ];
     text = ''
       test "$(eww ping)" = "pong" || exit 1
       cvol="$(${concatStringsSep " " cfg.volumeGetCmd})"
@@ -108,7 +108,7 @@ let
 
   hyprland-event-handler = pkgs.writeShellApplication {
     name = "hyprland-event-handler";
-    runtimeInputs = with pkgs; [ socat hyprland config.programs.eww.wrappedPackage jaq ];
+    runtimeInputs = with pkgs; [ socat cfg.package config.programs.eww.wrappedPackage jaq ];
     text = ''
       test "$(eww ping)" = "pong" || exit 1
       hyprctl dispatch exec eww update workspace="$(hyprctl activeworkspace -j | jaq .id)" >/dev/null
@@ -424,7 +424,7 @@ in {
              :halign "start"
              :spacing 0
       '' + concatStringsSep "\n" (imap1 (ni: name: let i = toString ni; in ''
-          (button :onclick "${pkgs.hyprland}/bin/hyprctl dispatch workspace ${i}"
+          (button :onclick "${cfg.package}/bin/hyprctl dispatch workspace ${i}"
                   :class {workspace == ${i} ? "active" : "inactive"}
                   ${name})
       '') cfg.workspaces) + ''
