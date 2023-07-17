@@ -20,7 +20,7 @@ with lib;
   programs.fish.interactiveShellInit = ''
     alias vim="nvim"
     # TODO: we probably do not need this as nixpkgs already has flutter
-    PATH="$PATH:$HOME/dev/flutter/bin"
+    set PATH "$PATH:$HOME/dev/flutter/bin"
     '';
 
   system.defaults = {
