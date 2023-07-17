@@ -26,7 +26,14 @@ let
   in pkgs.writeShellApplication {
     name = "steam-gamescope";
     runtimeInputs = with pkgs; [ coreutils procps inotify-tools gnugrep gnused file gamemode steam-mod steam-mod.run gamescope mangohud ];
-    text = ''
+    text = let
+      payload = pkgs.writeScript "payload" ''
+        unset WAYLAND_DISPLAY NIXOS_OZONE_WL
+        mangoapp& mpid=$!
+        steam -gamepadui -steamos3 -steampal -steamdeck &> "$HOME"/.steam/deckyloader/services/steam.log
+        kill "$mpid"
+        '';
+    in ''
       if pgrep '^PluginLoader' >/dev/null; then
         echo "steam-gamescope is already running"
         exit 0
@@ -123,9 +130,7 @@ let
         --max-scale ${toString cfg.maxScale} \
         --hide-cursor-delay ${toString cfg.hideCursorDelay} \
         --fade-out-duration ${toString cfg.fadeOutDuration} \
-        --steam -- ${pkgs.stdenv.shell} -c \
-          'mangoapp& mpid=$!; steam -gamepadui -steamos3 -steampal -steamdeck; kill "$mpid"' \
-          &> "$HOME"/.steam/deckyloader/services/gamescope.log
+        --steam -- ${payload} &> "$HOME"/.steam/deckyloader/services/gamescope.log
       ret=$?
       set -e
 
