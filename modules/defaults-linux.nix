@@ -6,6 +6,8 @@ with lib;
     ./defaults.nix
   ];
 
+  nix.gc.dates = "weekly";
+
   boot.kernelPackages = pkgs.linuxPackages_xanmod;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "digimend" ];
   boot.kernelParams = [ "mitigations=off" ];
@@ -47,7 +49,6 @@ with lib;
 
   users.mutableUsers = false;
   users.defaultUserShell = pkgs.fish;
-  programs.fish.enable = true;
   services.getty.autologinUser = mainUser;
 
   users.users = mapAttrs (user: params: {
@@ -154,10 +155,9 @@ with lib;
 
   environment.systemPackages = with pkgs; [
     sshfs-fuse
-    git
     coreutils
-    moreutils
     lshw
+    btdu
     lm_sensors
     blueberry
     pavucontrol

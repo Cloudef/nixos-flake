@@ -3,27 +3,29 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland";
     hyprland.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprland, ... }: {
+  outputs = { self, nixpkgs, nix-darwin, home-manager, hyprland, ... }: {
     nixosConfigurations = let
-      users.root = {
-        uid = 0;
-        git.name = "Jari Vetoniemi";
-        git.email = "jari.vetoniemi@cloudef.pw";
+      users = {
+        root = {
+          uid = 0;
+          git.name = "Jari Vetoniemi";
+          git.email = "jari.vetoniemi@cloudef.pw";
+        };
+        nix = {
+          uid = 1000;
+          groups = [ "wheel" ];
+          git.name = "Jari Vetoniemi";
+          git.email = "jari.vetoniemi@cloudef.pw";
+        };
       };
-
-      users.nix = {
-        uid = 1000;
-        groups = [ "wheel" ];
-        git.name = "Jari Vetoniemi";
-        git.email = "jari.vetoniemi@cloudef.pw";
-      };
-
       mainUser = "nix";
     in {
       nixos-linux = let
@@ -46,6 +48,26 @@
               { name = "Desktop"; image-path = "${pkgs.sunshine}/assets/desktop-alt.png"; }
               { name = "Steam"; cmd = "${pkgs.hyprland}/bin/hyprctl dispatch exec steam-gamescope"; image-path = "${pkgs.sunshine}/assets/steam.png"; }
             ];
+          })
+        ];
+      };
+    };
+
+    darwinConfigurations = let
+      users.jari = {
+        uid = 501;
+        git.name = "Jari Vetoniemi";
+        git.email = "jari.vetoniemi@cloudef.pw";
+      };
+      mainUser = "jari";
+    in {
+      jv-m1-mbp = nix-darwin.lib.darwinSystem {
+        specialArgs = { inherit users mainUser; inherit (self) inputs; };
+        modules = [
+          ./modules/defaults-darwin.nix
+          ({config, pkgs, ...}: {
+            nixpkgs.hostPlatform = "aarch64-darwin";
+            system.stateVersion = 4;
           })
         ];
       };

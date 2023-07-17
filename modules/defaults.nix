@@ -1,10 +1,7 @@
 { config, lib, pkgs, inputs, users, ... }:
 with lib;
 {
-  imports = [
-    inputs.home-manager.nixosModules.home-manager
-    ./neovim.nix
-  ];
+  imports = [ ./neovim.nix ];
 
   # Sorry Stallman, gotta play em gayms
   nixpkgs.config.allowUnfree = true;
@@ -14,20 +11,35 @@ with lib;
   nix.settings.auto-optimise-store = true;
   nix.registry = lib.mapAttrs (_: value: { flake = value; }) inputs;
   nix.nixPath = (lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry);
-  nix.gc.automatic = lib.mkDefault true;
-  nix.gc.options = lib.mkDefault "--delete-older-than 14d";
-  nix.gc.dates = lib.mkDefault "weekly";
+  nix.gc.automatic = true;
+  nix.gc.options = "--delete-older-than 14d";
+
+  # Some binary caches
+  nix.settings.substituters = [
+    "https://cache.nixos.org"
+    "https://nix-community.cachix.org"
+    "https://aws-lambda-rust.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    "aws-lambda-rust.cachix.org-1:bnY1QkUrQuSIHHfc3TJ1KL6xLvjQEKyHuQgweJl57RY="
+  ];
 
   # We in Tokyo
   time.timeZone = "Asia/Tokyo";
 
-  environment.sessionVariables.BEMENU_OPTS = "-H 32 --cw 2 --ch 2";
+  # FIISH
+  programs.fish.enable = true;
+
+  # XXX: sessionVariables is not available on nix-darwin
+  environment.variables.BEMENU_OPTS = "-H 32 --cw 2 --ch 2";
 
   # Home stuff that works everywhere
   home-manager.users = let
     rootConfig = config;
   in mapAttrs (user: params: { config, pkgs, ... }: {
-    home.stateVersion = rootConfig.system.stateVersion;
+    home.stateVersion = "23.05";
     home.file.".ssh/authorized_keys".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/authorized_keys";
     home.file.".ssh/id_rsa.pub".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/public_key";
     home.file.".ssh/id_rsa".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/private_key";
@@ -39,46 +51,48 @@ with lib;
     programs.git.extraConfig.safe.directory = "*";
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
-      alias ls="ls -lAh --group-directories-first --color=auto"
+      alias ls="${pkgs.coreutils}/bin/ls -lAh --group-directories-first --color=auto"
       alias mv="mv -v"
       alias cp="cp -v"
       alias rm="rm -v"
       alias dev="cd $HOME/dev/personal"
-    '';
-    home.packages = let
-      vimo = pkgs.writeShellApplication {
-        name = "vimo";
-        runtimeInputs = with pkgs; [ git gnugrep bemenu ];
-        text = ''
-          read -r gtdir < <(git rev-parse --show-toplevel)
-          (cd "$gtdir" && git ls-files) | BEMENU_BACKEND=curses bemenu -i -l 20 -p "vim" --accept-single | while read -r match; do
-            $EDITOR "$gtdir/$match"
-          done
-          '';
-      };
-    in with pkgs; [
-      vimo
-      bemenu
-      fishPlugins.forgit
-      fishPlugins.done
-      fishPlugins.grc
-      fishPlugins.hydro
-      grc
-      curl
-      tree
-      dfc
-      ncdu
-      btdu
-      file
-      jaq
-      silver-searcher
-      htop
-      unar
-      p7zip
-      imagemagick
-      ffmpeg
-      yt-dlp
-      mpv
-    ];
+      '';
   }) users;
+
+  environment.systemPackages = let
+    vimo = pkgs.writeShellApplication {
+      name = "vimo";
+      runtimeInputs = with pkgs; [ git gnugrep bemenu ];
+      text = ''
+        read -r gtdir < <(git rev-parse --show-toplevel)
+        (cd "$gtdir" && git ls-files) | BEMENU_BACKEND=curses bemenu -i -l 20 -p "vim" --ifne | while read -r match; do
+          $EDITOR "$gtdir/$match"
+        done
+        '';
+    };
+  in with pkgs; [
+    vimo
+    bemenu
+    fishPlugins.forgit
+    fishPlugins.done
+    fishPlugins.grc
+    fishPlugins.hydro
+    moreutils
+    git
+    grc
+    curl
+    tree
+    dfc
+    ncdu
+    file
+    jaq
+    silver-searcher
+    htop
+    unar
+    p7zip
+    imagemagick
+    ffmpeg
+    yt-dlp
+    mpv
+  ];
 }

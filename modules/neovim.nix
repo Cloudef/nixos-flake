@@ -1,9 +1,8 @@
 { config, lib, pkgs, inputs, users, ... }:
 with lib;
 {
-  imports = [ inputs.home-manager.nixosModules.home-manager ];
-
-  environment.etc."xdg/zls.json".mode = "0444";
+  # XXX: mode does not exist on darwin
+  # environment.etc."xdg/zls.json".mode = "0444";
   environment.etc."xdg/zls.json".text = let
     nix-zig-stdenv = pkgs.fetchFromGitHub {
       owner = "Cloudef";
@@ -31,6 +30,7 @@ with lib;
     programs.neovim.vimdiffAlias = true;
     programs.neovim.defaultEditor = true;
     programs.neovim.plugins = with pkgs.vimPlugins; [
+      # {{{ Plugins
       {
         plugin = mini-nvim;
         type = "lua";
@@ -204,12 +204,10 @@ with lib;
           autocmd BufEnter,BufWrite,BufRead * set noro
           '';
       }
+      # }}}
     ];
     programs.neovim.extraConfig = ''
-      nmap <C-e> :tabnext<CR>
-      nmap <C-q> :tabprev<CR>
-
-      " {{{ Bemenu functions
+      " {{{ Bemenu support
       function! Chomp(str)
         return escape(substitute(a:str, '\n$', "", ""), '\\/.*$^~[]#')
       endfunction
@@ -230,15 +228,14 @@ with lib;
         endfunction
         new
         setl buftype=nofile bufhidden=wipe nobuflisted nonumber
-        call termopen("cd ".g:gtdir."; git ls-files 2>/dev/null | BEMENU_BACKEND=curses bemenu -i -l 20 -p ".a:cmd, {'on_exit': 'BemenuOnExit'})
+        call termopen("cd ".g:gtdir."; git ls-files 2>/dev/null | BEMENU_BACKEND=curses bemenu -i -l 20 --ifne -p ".a:cmd, {'on_exit': 'BemenuOnExit'})
       endfunction
-      " }}}
       " use ctrl-t to open file in a new tab
       " use ctrl-f to open file in current buffer
       map <c-t> :call BemenuOpen("tabe")<cr>
       map <c-f> :call BemenuOpen("edit")<cr>
       map <c-g> :call BemenuOpen("split")<cr>
-       " }}}
+      " }}}
       " {{{ Aliases
       " {{{ Tab change functions
       function SetTab(var1)
@@ -261,6 +258,10 @@ with lib;
       " strip non ascii characters from file
       nnoremap <silent> :strip :%s/[<C-V>128-<C-V>255<C-V>01-<C-V>31]//g<CR>
 
+      " tab aliases
+      nmap <C-e> :tabnext<CR>
+      nmap <C-q> :tabprev<CR>
+      " }}}
       " {{{Autocheck file changes
       set autoread
       augroup checktime
