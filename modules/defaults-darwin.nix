@@ -33,6 +33,34 @@ with lib;
     screencapture.location = "/tmp";
   };
 
+  system.defaults.CustomUserPreferences = {
+    "com.apple.finder" = {
+      ShowExternalHardDrivesOnDesktop = true;
+      ShowHardDrivesOnDesktop = true;
+      ShowMountedServersOnDesktop = true;
+      ShowRemovableMediaOnDesktop = true;
+      _FXSortFoldersFirst = true;
+      # When performing a search, search the current folder by default
+      FXDefaultSearchScope = "SCcf";
+    };
+    "com.apple.desktopservices" = {
+      # Avoid creating .DS_Store files on network or USB volumes
+      DSDontWriteNetworkStores = true;
+      DSDontWriteUSBStores = true;
+    };
+    "com.apple.AdLib" = {
+      allowApplePersonalizedAdvertising = false;
+    };
+    "com.apple.SoftwareUpdate" = {
+      AutomaticCheckEnabled = true;
+      ScheduleFrequency = 1;
+      AutomaticDownload = 1;
+      CriticalUpdateInstall = 0;
+    };
+    "com.apple.ImageCapture".disableHotPlug = true;
+    "com.apple.commerce".AutoUpdate = true;
+  };
+
   environment.variables.JAVA_HOME = "/Applications/Android Studio.app/Contents/jre/Contents/Home";
 
   nixpkgs.overlays = [(final: prev: {
