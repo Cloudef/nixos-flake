@@ -4,6 +4,21 @@ with lib;
 let
   cfg = config.programs.steamdeck-experience;
 
+  # fixes steam controller mouse emulation on wayland (note steam is 32bit)
+  # TODO: patch so you can pass it WAYLAND_DISPLAY manually, so we can avoid exposing wayland to all apps
+  extest = pkgs.pkgsi686Linux.rustPlatform.buildRustPackage rec {
+    pname = "extest";
+    version = "0.0.1";
+    src = pkgs.fetchFromGitHub {
+      owner = "Supreeeme";
+      repo = pname;
+      rev = "45966909c055ab08fd7db41f12242bd6b5ad7d08";
+      hash = "sha256-bCZesSKgkarofFAVd51gfZTGKlBCkoLTmQave8krO5A=";
+    };
+
+    cargoHash = "sha256-Tvw40zhJBC/6vNrJ/D5o8+Pav/bLae5NjLoOp1KSzS8=";
+  };
+
   steam-mod = (pkgs.steam.override {
     extraPkgs = pkgs: with pkgs; [
       # steamdeck first boot wizard skip
@@ -33,8 +48,9 @@ let
     text = let
       payload = pkgs.writeScript "payload" ''
         unset WAYLAND_DISPLAY NIXOS_OZONE_WL
+        export WAYLAND_DISPLAY="$ORIGINAL_WAYLAND_DISPLAY"
         mangoapp& mpid=$!
-        steam -gamepadui -steamos3 -steampal -steamdeck &> "$HOME"/.steam/deckyloader/services/steam.log
+        LD_PRELOAD=${extest}/lib/libextest.so steam -gamepadui -steamos3 -steampal -steamdeck &> "$HOME"/.steam/deckyloader/services/steam.log
         kill "$mpid"
         '';
     in ''
@@ -124,6 +140,8 @@ let
       export XCURSOR_THEME=steam
       export vk_xwayland_wait_ready=false
       export WINEDLLOVERRIDES=dxgi=n
+
+      export ORIGINAL_WAYLAND_DISPLAY="$WAYLAND_DISPLAY"
 
       set +e
       # shellcheck disable=SC2016

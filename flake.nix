@@ -21,7 +21,7 @@
         };
         nix = {
           uid = 1000;
-          groups = [ "wheel" ];
+          groups = [ "wheel" "input" ];
           git.name = "Jari Vetoniemi";
           git.email = "jari.vetoniemi@cloudef.pw";
         };
