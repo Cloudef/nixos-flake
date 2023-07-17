@@ -55,7 +55,7 @@ with lib;
       alias mv="mv -v"
       alias cp="cp -v"
       alias rm="rm -v"
-      alias dev="cd $HOME/dev/personal"
+      alias dev="cd $HOME/dev"
       '';
   }) users;
 
