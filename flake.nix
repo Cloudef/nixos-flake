@@ -46,7 +46,7 @@
             programs.sunshine.users = [ "nix" ];
             programs.sunshine.apps = [
               { name = "Desktop"; image-path = "${pkgs.sunshine}/assets/desktop-alt.png"; }
-              { name = "Steam"; cmd = "${pkgs.hyprland}/bin/hyprctl dispatch exec steam-gamescope"; image-path = "${pkgs.sunshine}/assets/steam.png"; }
+              { name = "Steam"; cmd = "${config.programs.hyprland-desktop.finalPackage}/bin/hyprctl dispatch exec steam-gamescope"; image-path = "${pkgs.sunshine}/assets/steam.png"; }
             ];
           })
         ];

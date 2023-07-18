@@ -6,12 +6,12 @@ with lib;
 let
   cfg = config.programs.hyprland-desktop;
 
-  default-terminal-cmd = [ "${config.programs.alacritty.wrappedPackage}/bin/alacritty" ];
+  default-terminal-cmd = [ "${config.programs.alacritty.finalPackage}/bin/alacritty" ];
 
   terminal-autocd-cmd = let
     wrapped = pkgs.writeShellApplication {
       name = "hyprland-terminal-autocd";
-      runtimeInputs = with pkgs; [ procps cfg.package jaq ];
+      runtimeInputs = with pkgs; [ procps cfg.finalPackage jaq ];
       text = ''
         if read -r _ cwd < <((pwdx "$(pgrep -P "$(hyprctl activewindow -j | jaq -r .pid)")") 2>/dev/null); then
           cd "$cwd"
@@ -55,7 +55,7 @@ let
         wl-clipboard
         libnotify
         imagemagick
-        cfg.package
+        cfg.finalPackage
       ]}
     '';
   };
@@ -73,7 +73,7 @@ let
 
   pipewire-event-handler = pkgs.writeShellApplication {
     name = "pipewire-event-handler";
-    runtimeInputs = with pkgs; [ pulseaudio cfg.package config.programs.eww.wrappedPackage gnugrep ];
+    runtimeInputs = with pkgs; [ pulseaudio cfg.finalPackage config.programs.eww.finalPackage gnugrep ];
     text = ''
       test "$(eww ping)" = "pong" || exit 1
       cvol="$(${concatStringsSep " " cfg.volumeGetCmd})"
@@ -108,7 +108,7 @@ let
 
   hyprland-event-handler = pkgs.writeShellApplication {
     name = "hyprland-event-handler";
-    runtimeInputs = with pkgs; [ socat cfg.package config.programs.eww.wrappedPackage jaq ];
+    runtimeInputs = with pkgs; [ socat cfg.finalPackage config.programs.eww.finalPackage jaq ];
     text = ''
       test "$(eww ping)" = "pong" || exit 1
       hyprctl dispatch exec eww update workspace="$(hyprctl activeworkspace -j | jaq .id)" >/dev/null
@@ -206,13 +206,25 @@ in {
       default = true;
     };
 
+    debug = mkOption {
+      type = types.bool;
+      default = true;
+    };
+
     package = mkOption {
       type = types.package;
-      default = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+      default = if (cfg.debug) then pkgs.hyprland-debug else pkgs.hyprland;
       defaultText = literalExpression "pkgs.hyprland";
       description = mdDoc ''
         The package used for the hyprland compositor.
         '';
+    };
+
+    finalPackage = mkOption {
+      type = types.package;
+      readOnly = true;
+      default = if (cfg.debug) then pkgs.enableDebugging cfg.package else cfg.package;
+      description = "Resulting package.";
     };
 
     cursorThemePackage = mkOption {
@@ -362,13 +374,13 @@ in {
   };
 
   config = mkIf cfg.enable {
-    programs.alacritty = mkIf (cfg.terminalCmd == default-terminal-cmd) {
-      enable = true;
-    };
+    programs.alacritty = mkIf (cfg.terminalCmd == default-terminal-cmd) { enable = true; };
 
     nix.settings.substituters = [ "https://hyprland.cachix.org" ];
     nix.settings.trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
-    nixpkgs.overlays = [ inputs.hyprland.overlays.default ];
+    nixpkgs.overlays = [ inputs.hyprland.overlays.default ] ++ optionals (cfg.debug) [(final: prev: {
+      wlroots = prev.wlroots.overrideAttrs (_: { mesonBuildType = "debug"; dontStrip = true; hardeningDisable = [ "fortify" ]; });
+    })];
 
     environment.systemPackages = with pkgs; [
       cfg.cursorThemePackage
@@ -424,7 +436,7 @@ in {
              :halign "start"
              :spacing 0
       '' + concatStringsSep "\n" (imap1 (ni: name: let i = toString ni; in ''
-          (button :onclick "${cfg.package}/bin/hyprctl dispatch workspace ${i}"
+          (button :onclick "${cfg.finalPackage}/bin/hyprctl dispatch workspace ${i}"
                   :class {workspace == ${i} ? "active" : "inactive"}
                   ${name})
       '') cfg.workspaces) + ''
@@ -513,9 +525,9 @@ in {
     environment.sessionVariables.QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
     environment.etc."xdg/hyprland.conf".mode = "0444";
     environment.etc."xdg/hyprland.conf".text = ''
-      exec-once = ${cfg.package}/bin/hyprctl setcursor ${cfg.cursorThemePackage.pname} 24
+      exec-once = ${cfg.finalPackage}/bin/hyprctl setcursor ${cfg.cursorThemePackage.pname} 24
       exec-once = ${pkgs.wbg}/bin/wbg ${cfg.wallpaper}
-      exec-once = ${config.programs.eww.wrappedPackage}/bin/eww open bar
+      exec-once = ${config.programs.eww.finalPackage}/bin/eww open bar
       exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && systemctl --user start hyprland-session.target
     '' + concatStringsSep "\n" (
       map (x: "exec-once = ${concatStringsSep " " x}") cfg.extraExecOnce ++
@@ -637,7 +649,7 @@ in {
     xdg.portal.extraPortals = [
       (inputs.hyprland.inputs.xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland.override {
         hyprland-share-picker = inputs.hyprland.inputs.xdph.packages.${pkgs.stdenv.hostPlatform.system}.hyprland-share-picker.override {
-          hyprland = cfg.package;
+          hyprland = cfg.finalPackage;
         };
       })
     ];
@@ -649,7 +661,7 @@ in {
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
           systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
-          ${cfg.package}/bin/Hyprland --config /etc/xdg/hyprland.conf
+          ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
         end
         '';

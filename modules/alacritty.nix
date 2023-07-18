@@ -3,9 +3,6 @@ with lib;
 let
   cfg = config.programs.alacritty;
   yamlFormat = pkgs.formats.yaml { };
-  wrapper = pkgs.writeScriptBin "alacritty" ''
-    ${cfg.package}/bin/alacritty --config-file /etc/xdg/alacritty.yml "$@"
-    '';
 in {
   disabledModules = ["programs/alacritty.nix"];
 
@@ -19,9 +16,14 @@ in {
       description = "The Alacritty package to install.";
     };
 
-    wrappedPackage = mkOption {
+    finalPackage = let
+      wrapped = pkgs.writeScriptBin "alacritty" ''
+        ${cfg.package}/bin/alacritty --config-file /etc/xdg/alacritty.yml "$@"
+        '';
+    in mkOption {
       type = types.package;
-      default = wrapper;
+      readOnly = true;
+      default = wrapped;
       description = "The wrapped package that reads configuration from /etc/xdg/alacritty.yml .";
     };
 
@@ -77,8 +79,8 @@ in {
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ wrapper ];
-    environment.sessionVariables.TERMINAL = lib.mkDefault "${wrapper}/bin/alacritty";
+    environment.systemPackages = [ cfg.finalPackage ];
+    environment.sessionVariables.TERMINAL = lib.mkDefault "${cfg.finalPackage}/bin/alacritty";
     environment.etc."xdg/alacritty.yml" = mkIf (cfg.settings != {}) {
       # TODO: Replace by the generate function but need to figure out how to
       # handle the escaping first.
