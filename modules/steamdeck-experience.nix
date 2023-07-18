@@ -169,24 +169,25 @@ let
     name = "proton";
     runtimeInputs = with pkgs; [ gamemode gamescope steam-mod.run procps ];
     text = ''
-      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:--i}"
+      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:--i -n}"
       mkdir -p "''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
       export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export LANG="''${LC_ALL:-ja_JP.utf8}"
       set +e
+      # shellcheck disable=SC2086
       XKB_DEFAULT_LAYOUT="${config.console.keyMap}" \
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0 \
       vk_xwayland_wait_ready=false \
       WINEDLLOVERRIDES=dxgi=n \
-        gamemoderun gamescope --fullscreen -F fsr \
+        gamemoderun gamescope --fullscreen --fsr-upscaling \
           -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
           -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
           -o ${toString cfg.unfocusedFramerate} \
           --max-scale ${toString cfg.maxScale} \
           --hide-cursor-delay ${toString cfg.hideCursorDelay} \
           --fade-out-duration ${toString cfg.fadeOutDuration} \
-          "$GAMESCOPE_SCALER" -- steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
+          $GAMESCOPE_SCALER -- steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" run "$@"
       ret=$?
       set -e
       pkill -P "$BASHPID" explorer.exe
