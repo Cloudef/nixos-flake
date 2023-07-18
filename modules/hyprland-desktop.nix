@@ -661,7 +661,7 @@ in {
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
           systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
-          ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf
+          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
         end
         '';
