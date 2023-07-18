@@ -70,8 +70,20 @@ with lib;
         done
         '';
     };
+
+    psmenu = pkgs.writeShellApplication {
+      name = "psmenu";
+      runtimeInputs = with pkgs; [ procps bemenu ];
+      text = ''
+        ps --no-headers -a --sort "-%cpu" -o "pid,%cpu,%mem,args" | BEMENU_BACKEND=curses bemenu -i -l 20 -p "psmenu" --ifne | while read -r line; do
+          IFS=" " read -r pid _ <<<"$line"
+          printf "%s\n" "$pid"
+        done
+        '';
+    };
   in with pkgs; [
     vimo
+    psmenu
     bemenu
     fishPlugins.forgit
     fishPlugins.done
