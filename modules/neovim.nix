@@ -150,7 +150,7 @@ with lib;
           require('lspconfig').zls.setup {
             autostart = true,
             capabilities = capabilities,
-            cmd = { "${pkgs.zls}/bin/zls" },
+            cmd = { "${inputs.zls.packages.${pkgs.system}.zls}/bin/zls" },
           }
           require('lspconfig').nixd.setup {
             autostart = true,
