@@ -528,7 +528,7 @@ in {
       exec-once = ${cfg.finalPackage}/bin/hyprctl setcursor ${cfg.cursorThemePackage.pname} 24
       exec-once = ${pkgs.wbg}/bin/wbg ${cfg.wallpaper}
       exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && /run/current-system/systemd/bin/systemctl --user start hyprland-session.target
-      exec = ${config.programs.eww.finalPackage}/bin/eww open bar
+      exec-once = ${config.programs.eww.finalPackage}/bin/eww open bar
       exec = /run/current-system/systemd/bin/systemctl --user restart pipewire-event-handler.service
       exec = /run/current-system/systemd/bin/systemctl --user restart hyprland-event-handler.service
     '' + concatStringsSep "\n" (
