@@ -527,8 +527,10 @@ in {
     environment.etc."xdg/hyprland.conf".text = ''
       exec-once = ${cfg.finalPackage}/bin/hyprctl setcursor ${cfg.cursorThemePackage.pname} 24
       exec-once = ${pkgs.wbg}/bin/wbg ${cfg.wallpaper}
-      exec-once = ${config.programs.eww.finalPackage}/bin/eww open bar
-      exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && systemctl --user start hyprland-session.target
+      exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && /run/current-system/systemd/bin/systemctl --user start hyprland-session.target
+      exec = ${config.programs.eww.finalPackage}/bin/eww open bar
+      exec = /run/current-system/systemd/bin/systemctl --user restart pipewire-event-handler.service
+      exec = /run/current-system/systemd/bin/systemctl --user restart hyprland-event-handler.service
     '' + concatStringsSep "\n" (
       map (x: "exec-once = ${concatStringsSep " " x}") cfg.extraExecOnce ++
       map (x: "exec = ${concatStringsSep " " x}") cfg.extraExec ++
@@ -659,7 +661,7 @@ in {
     in mapAttrs (user: params: { config, pkgs, ... }: {
       programs.fish.interactiveShellInit = mkIf cfg.fishAutoStart ''
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
-          systemctl --user reset-failed
+          /run/current-system/systemd/bin/systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
           WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
