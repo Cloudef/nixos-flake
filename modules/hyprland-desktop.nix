@@ -208,7 +208,7 @@ in {
 
     debug = mkOption {
       type = types.bool;
-      default = true;
+      default = false;
     };
 
     package = mkOption {
