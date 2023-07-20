@@ -624,7 +624,7 @@ in {
       bind = SUPER SHIFT, down, resizeactive, 0 10
 
       '' + concatStringsSep "\n" (imap1 (ni: _: let i = toString ni; in ''
-        bind = SUPER,F${i}, workspace, ${i}
+        bind = SUPER, F${i}, workspace, ${i}
         bind = SUPER SHIFT, F${i}, movetoworkspacesilent, ${i}
       '') cfg.workspaces) + ''
 
