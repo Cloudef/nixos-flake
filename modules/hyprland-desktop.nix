@@ -384,6 +384,7 @@ in {
 
     environment.systemPackages = with pkgs; [
       cfg.cursorThemePackage
+      cfg.finalPackage
       hyprshot
       wl-clipboard
       imv
