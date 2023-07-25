@@ -84,37 +84,18 @@ with lib;
     bluez_monitor.properties["bluez5.codecs"] = "[ sbc sbc_xq aac ldac aptx aptx_hd ]"
     '';
 
-  environment.etc."pipewire/pipewire.conf.d/92-low-latency.conf".text = ''
+  environment.etc."pipewire/pipewire.conf.d/99-custom.conf".text = ''
     context.properties = {
-      default.clock.rate = 48000
-      default.clock.quantum = 128
-      default.clock.min-quantum = 128
-      default.clock.max-quantum = 128
+      default.clock.allowed-rates = [ 44100 48000 ]
     }
     '';
 
-  environment.etc."pipewire/pipewire-pulse.d/92-low-latency.conf".source = (pkgs.formats.json {}).generate "92-low-latency.conf" {
-    context.exec = [
-      # switch audio device automatically (e.g. bluetooth headphones)
-      { path = "${pkgs.pulseaudio}/bin/pactl"; args = "load-module module-switch-on-connect"; }
-    ];
-    context.modules = [
-      {
-        name = "libpipewire-module-protocol-pulse";
-        args = {
-          pulse.min.req = "128/48000";
-          pulse.default.req = "128/48000";
-          pulse.max.req = "128/48000";
-          pulse.min.quantum = "128/48000";
-          pulse.max.quantum = "128/48000";
-        };
-      }
-    ];
-    stream.properties = {
-      node.latency = "128/48000";
-      resample.quality = 1;
-    };
-  };
+  environment.etc."pipewire/pipewire-pulse.d/99-custom.conf".text = ''
+    pulse.cmd = [
+      { cmd = "load-module" args = "module-combine-sink" }
+      { cmd = "load-module" args = "module-switch-on-connect" }
+    ]
+    '';
 
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
