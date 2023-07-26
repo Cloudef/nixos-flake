@@ -428,7 +428,7 @@ in {
           (metric :label "VOL"
                   :value {volume}
                   :onchange "${concatStringsSep " " cfg.volumeSetCmd} {}")
-          {formattime(EWW_TIME, "%b %d, %Y   %H:%M:%S")}))
+          {formattime(EWW_TIME, "%a %b %d, %Y   %H:%M:%S")}))
 
       (defwidget workspaces []
         (box :class "workspaces"
