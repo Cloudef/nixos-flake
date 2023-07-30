@@ -10,7 +10,7 @@ with lib;
 
   boot.kernelPackages = pkgs.linuxPackages_xanmod;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "digimend" ];
-  boot.kernelParams = [ "mitigations=off" "preempt=full" ];
+  boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = [
     config.boot.kernelPackages.xpadneo
     config.boot.kernelPackages.hid-nintendo
