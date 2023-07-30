@@ -196,6 +196,7 @@ with lib;
       vim-toml
       vim-terraform
       vim-shellcheck
+      vim-abolish
       {
         plugin = suda-vim;
         type = "viml";
