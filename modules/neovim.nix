@@ -55,6 +55,14 @@ with lib;
         '';
 
       lazyPlugins = [
+        (lazyPlugin "folke/which-key.nvim" {
+          opts = "";
+          init = ''
+            vim.o.timeout = true
+            vim.o.timeoutlen = 300
+            '';
+        })
+        (lazyPlugin "tpope/vim-rsi" {})
         (lazyPlugin "echasnovski/mini.nvim" {
           deps = [
             (lazyPlugin "nvim-treesitter/nvim-treesitter" { opts = ""; })
@@ -112,13 +120,6 @@ with lib;
                     '';
                 })
               ];
-            })
-            (lazyPlugin "folke/which-key.nvim" {
-              opts = "";
-              init = ''
-                vim.o.timeout = true
-                vim.o.timeoutlen = 300
-                '';
             })
             (lazyPlugin "echasnovski/mini.base16" {
               config = ''
@@ -262,6 +263,7 @@ with lib;
           ];
         })
         (lazyPlugin "tpope/vim-abolish" {})
+        (lazyPlugin "tpope/vim-surround" {})
         (lazyPlugin "lambdalisue/suda.vim" {
           init = ''
             vim.cmd [[ let g:suda#nopass = 1 ]]
