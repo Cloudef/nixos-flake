@@ -59,6 +59,10 @@ with lib;
       '';
   }) users;
 
+  fonts.fonts = with pkgs; [
+    nerdfonts
+  ];
+
   environment.systemPackages = let
     vimo = pkgs.writeShellApplication {
       name = "vimo";

@@ -53,6 +53,11 @@ in {
         colors.bright.cyan = "#a3babf";
         colors.normal.white = "#ddeedd";
         colors.bright.white = "#6c887a";
+        font.normal.family = "Hack Nerd Font Mono";
+        font.normal.style = "Regular";
+        font.bold.style = "Bold";
+        font.italic.style = "Italic";
+        font.bold_italic.style = "Bold Italic";
       };
       example = literalExpression ''
         {
