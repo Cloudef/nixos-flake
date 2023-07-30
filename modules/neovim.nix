@@ -29,7 +29,7 @@ with lib;
     programs.neovim.defaultEditor = true;
     programs.neovim.plugins = let
       # TODO: write small program that converts JSON to Lua table, then we can use Nix natively to configure neovim plugins.
-      lazyPlugin = shortUrl: { lazy ? false, enabled ? true, deps ? [], opts ? null, config ? null, init ? null, fts ? null }: ''
+      lazyPlugin = shortUrl: { lazy ? false, enabled ? true, deps ? [], opts ? null, config ? null, init ? null, fts ? null, event ? null }: ''
         {
           "${shortUrl}",
           lazy = ${if lazy then "true" else "false"},
@@ -50,6 +50,8 @@ with lib;
           end,
         '' + optionalString (fts != null) ''
           ft = { ${concatMapStringsSep "," (x: ''"${x}"'') fts} },
+        '' + optionalString (event != null) ''
+          event = "${event}",
         '' + ''
         }
         '';
@@ -77,7 +79,29 @@ with lib;
             (lazyPlugin "simrat39/symbols-outline.nvim" { opts = ""; })
             (lazyPlugin "HiPhish/rainbow-delimiters.nvim" {})
             (lazyPlugin "folke/noice.nvim" {
-              opts = "";
+              event = "VeryLazy";
+              opts = ''
+                override = {
+                  ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+                  ["vim.lsp.util.stylize_markdown"] = true,
+                  ["cmp.entry.get_documentation"] = true,
+                },
+                notify = {
+                  enabled = false,
+                },
+                '';
+              init = ''
+                -- XXX: https://github.com/jose-elias-alvarez/null-ls.nvim/issues/428
+                --      ^ don't use null-ls but this error comes from lspconfig
+                --        remove this hack whenever something's fixed somewhere
+                notify = vim.notify
+                vim.notify = function(msg, ...)
+                  if msg:match("warning: multiple different client offset_encodings detected for buffer, this is not supported yet") then
+                    return
+                  end
+                  notify(msg,...)
+                end
+                '';
               deps = [
                 (lazyPlugin "MunifTanjim/nui.nvim" {})
                 (lazyPlugin "rcarriga/nvim-notify" {})
@@ -202,7 +226,7 @@ with lib;
               config = ''
                 require("lazy-lsp").setup({
                   excluded_servers = {
-                    "sqls"
+                    "ccls", "sqls",
                   },
                   default_config = {
                     capabilities = require('cmp_nvim_lsp').default_capabilities(),
@@ -210,8 +234,8 @@ with lib;
                   configs = {
                     zls = {
                       cmd = { "${inputs.zls.packages.${pkgs.system}.zls}/bin/zls" },
-                    }
-                  }
+                    },
+                  },
                 })
                 vim.api.nvim_create_autocmd('LspAttach', {
                   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
