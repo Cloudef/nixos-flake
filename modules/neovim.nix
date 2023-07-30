@@ -21,193 +21,267 @@ with lib;
     }
     '';
 
-  home-manager.users = let
-    rootConfig = config;
-  in mapAttrs (user: params: { config, pkgs, ... }: {
+  home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: {
     programs.neovim.enable = true;
     programs.neovim.viAlias = true;
     programs.neovim.vimAlias = true;
     programs.neovim.vimdiffAlias = true;
     programs.neovim.defaultEditor = true;
-    programs.neovim.plugins = with pkgs.vimPlugins; [
-      # {{{ Plugins
-      {
-        plugin = mini-nvim;
-        type = "lua";
-        config = ''
-          require('mini.base16').setup({
-            palette = require('mini.base16').mini_palette('#121212', '#cacaca', 75),
-            use_cterm = true
-          })
-          require('mini.basics').setup({})
-          require('mini.align').setup({})
-          require('mini.comment').setup({})
-          require('mini.cursorword').setup({})
-          require('mini.trailspace').setup({})
-          require('mini.pairs').setup({})
-          require('mini.statusline').setup({})
-          '';
-      }
-      {
-        plugin = vim-indent-guides;
-        config = ''
-          set noswapfile
-          set background=dark
-          set ts=4 sw=4 et
-          let g:indent_guides_enable_on_vim_startup = 1
-          let g:indent_guides_start_level = 2
-          let g:indent_guides_guide_size = 1
-          let g:indent_guides_exclude_filetypes = [ "help", "nofile", "terminal", "prompt", "" ]
-          '';
-      }
-      {
-        plugin = guess-indent-nvim;
-        type = "lua";
-        config = ''
-          require('guess-indent').setup {
-            auto_cmd = true,
-            override_editorconfig = false,
-            buftype_exclude = {
-              "help",
-              "nofile",
-              "terminal",
-              "prompt",
-            },
-          }
+    programs.neovim.plugins = let
+      # TODO: write small program that converts JSON to Lua table, then we can use Nix natively to configure neovim plugins.
+      lazyPlugin = shortUrl: { lazy ? false, enabled ? true, deps ? [], opts ? null, config ? null, init ? null, fts ? null }: ''
+        {
+          "${shortUrl}",
+          lazy = ${if lazy then "true" else "false"},
+          enabled = ${if enabled then "true" else "false"},
+        '' + optionalString (deps != []) ''
+          dependencies = {
+            ${concatStringsSep "," deps}
+          },
+        '' + optionalString (opts != null) ''
+          opts = {${opts}},
+        '' + optionalString (config != null) ''
+          config = function()
+          ${config}
+          end,
+        '' + optionalString (init != null) ''
+          init = function()
+          ${init}
+          end,
+        '' + optionalString (fts != null) ''
+          ft = { ${concatMapStringsSep "," (x: ''"${x}"'') fts} },
+        '' + ''
+        }
         '';
-      }
-      vim-vsnip
-      cmp-vsnip
-      cmp-nvim-lsp
-      cmp-buffer
-      cmp-path
-      cmp-cmdline
-      cmp-git
-      {
-        plugin = nvim-cmp;
-        type = "lua";
-        config = ''
-          local cmp = require('cmp')
-          cmp.setup({
-            snippet = {
-              expand = function(args)
-                vim.fn["vsnip#anonymous"](args.body)
-              end,
-            },
-            window = {
-              completion = cmp.config.window.bordered(),
-              documentation = cmp.config.window.bordered(),
-            },
-            mapping = cmp.mapping.preset.insert({
-              ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-              ['<C-f>'] = cmp.mapping.scroll_docs(4),
-              ['<C-Space>'] = cmp.mapping.complete(),
-              ['<C-e>'] = cmp.mapping.abort(),
-              -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-              ['<CR>'] = cmp.mapping.confirm({ select = true }),
-            }),
-            sources = cmp.config.sources({
-              { name = 'nvim_lsp' },
-              { name = 'vsnip' },
-            }, {
-              { name = 'buffer' },
-            })
-          })
 
-          -- Set configuration for specific filetype.
-          cmp.setup.filetype('gitcommit', {
-            sources = cmp.config.sources({
-              { name = 'git' },
-            }, {
-              { name = 'buffer' },
+      lazyPlugins = [
+        (lazyPlugin "echasnovski/mini.nvim" {
+          deps = [
+            (lazyPlugin "nvim-treesitter/nvim-treesitter" { opts = ""; })
+            (lazyPlugin "lewis6991/gitsigns.nvim" { opts = ""; })
+            (lazyPlugin "nvim-tree/nvim-web-devicons" { opts = ""; })
+            (lazyPlugin "akinsho/bufferline.nvim" { opts = ""; })
+            (lazyPlugin "DanilaMihailov/beacon.nvim" {})
+            (lazyPlugin "folke/todo-comments.nvim" { opts = ""; })
+            (lazyPlugin "folke/trouble.nvim" { opts = ""; })
+            (lazyPlugin "ggandor/leap.nvim" { opts = ""; })
+            (lazyPlugin "glepnir/lspsaga.nvim" { opts = ""; })
+            (lazyPlugin "simrat39/symbols-outline.nvim" { opts = ""; })
+            (lazyPlugin "HiPhish/rainbow-delimiters.nvim" {})
+            (lazyPlugin "folke/noice.nvim" {
+              opts = "";
+              deps = [
+                (lazyPlugin "MunifTanjim/nui.nvim" {})
+                (lazyPlugin "rcarriga/nvim-notify" {})
+              ];
             })
-          })
-
-          -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-          cmp.setup.cmdline({ '/', '?' }, {
-            mapping = cmp.mapping.preset.cmdline(),
-            sources = {
-              { name = 'buffer' }
-            }
-          })
-
-          -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-          cmp.setup.cmdline(':', {
-            mapping = cmp.mapping.preset.cmdline(),
-            sources = cmp.config.sources({
-              { name = 'path' }
-            }, {
-              { name = 'cmdline' }
+            (lazyPlugin "kevinhwang91/nvim-ufo" {
+              opts = "";
+              init = ''
+                vim.o.foldcolumn = '1'
+                vim.o.foldlevel = 99
+                vim.o.foldlevelstart = 99
+                vim.o.foldenable = true
+              '';
+              deps = [
+                (lazyPlugin "kevinhwang91/promise-async" {})
+              ];
             })
-          })
-          '';
-      }
-      {
-        plugin = nvim-lspconfig;
-        type = "lua";
-        config = ''
-          local capabilities = require('cmp_nvim_lsp').default_capabilities()
-          require('lspconfig').zls.setup {
-            autostart = true,
-            capabilities = capabilities,
-            cmd = { "${inputs.zls.packages.${pkgs.system}.zls}/bin/zls" },
-          }
-          require('lspconfig').nixd.setup {
-            autostart = true,
-            capabilities = capabilities,
-            cmd = { "${pkgs.nixd}/bin/nixd" },
-            settings = {
-              ['nixd'] = {
-                formatting = {
-                  command = { "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" },
-                },
+            (lazyPlugin "lukas-reineke/indent-blankline.nvim" {
+              opts = ''
+                space_char_blankline = " ",
+                show_current_context = true,
+                show_current_context_start = true,
+                '';
+              init = ''
+                vim.opt.list = true
+                vim.opt.listchars:append "eol:↴"
+                vim.cmd [[ set ts=4 sw=4 et ]]
+                '';
+              deps = [
+                (lazyPlugin "NMAC427/guess-indent.nvim" {
+                  opts = ''
+                    auto_cmd = true,
+                    override_editorconfig = false,
+                    buftype_exclude = {
+                      "help",
+                      "nofile",
+                      "terminal",
+                      "prompt",
+                    },
+                    '';
+                })
+              ];
+            })
+            (lazyPlugin "folke/which-key.nvim" {
+              opts = "";
+              init = ''
+                vim.o.timeout = true
+                vim.o.timeoutlen = 300
+                '';
+            })
+            (lazyPlugin "echasnovski/mini.base16" {
+              config = ''
+                require('mini.base16').setup({
+                  palette = require('mini.base16').mini_palette('#121212', '#cacaca', 75),
+                  use_cterm = true
+                })
+                vim.cmd [[ highlight LineNr guibg=none ]]
+                vim.cmd [[ highlight SignColumn guibg=none ]]
+                vim.cmd [[ highlight GitSignsAdd guibg=none ]]
+                vim.cmd [[ highlight GitSignsChange guibg=none ]]
+                vim.cmd [[ highlight GitSignsDelete guibg=none ]]
+                vim.cmd [[ highlight GitSignsUntracked guibg=none ]]
+              '';
+            })
+            (lazyPlugin "echasnovski/mini.basics" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.align" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.comment" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.cursorword" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.trailspace" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.pairs" { opts = ""; })
+            (lazyPlugin "echasnovski/mini.statusline" { opts = ""; })
+          ];
+        })
+        (lazyPlugin "hrsh7th/nvim-cmp" {
+          config = ''
+            local cmp = require('cmp')
+            cmp.setup({
+              snippet = {
+                expand = function(args)
+                  vim.fn["vsnip#anonymous"](args.body)
+                end,
               },
-            },
-          }
-          vim.api.nvim_create_autocmd('LspAttach', {
-            group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-            callback = function(ev)
-              -- Buffer local mappings.
-              -- See `:help vim.lsp.*` for documentation on any of the below functions
-              local opts = { buffer = ev.buf }
-              vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-              vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-              vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-              vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-              vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-              vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
-              vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
-              vim.keymap.set('n', '<space>wl', function()
-                print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-              end, opts)
-              vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-              vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-              vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
-              vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-              vim.keymap.set('n', '<space>f', function()
-                vim.lsp.buf.format { async = true }
-              end, opts)
-            end,
-          })
-          '';
-      }
-      zig-vim
-      wgsl-vim
-      vim-toml
-      vim-terraform
-      vim-shellcheck
-      vim-abolish
-      {
-        plugin = suda-vim;
-        type = "viml";
-        config = ''
-          let g:suda#nopass = 1
-          autocmd BufEnter,BufWrite,BufRead * set noro
-          '';
-      }
-      # }}}
-    ];
+              window = {
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
+              },
+              mapping = cmp.mapping.preset.insert({
+                ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                ['<C-Space>'] = cmp.mapping.complete(),
+                ['<C-e>'] = cmp.mapping.abort(),
+                -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+                ['<CR>'] = cmp.mapping.confirm({ select = true }),
+              }),
+              sources = cmp.config.sources({
+                { name = 'nvim_lsp' },
+                { name = 'vsnip' },
+              }, {
+                { name = 'buffer' },
+              })
+            })
+
+            -- Set configuration for specific filetype.
+            cmp.setup.filetype('gitcommit', {
+              sources = cmp.config.sources({
+                { name = 'git' },
+              }, {
+                { name = 'buffer' },
+              })
+            })
+
+            -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline({ '/', '?' }, {
+              mapping = cmp.mapping.preset.cmdline(),
+              sources = {
+                { name = 'buffer' }
+              }
+            })
+
+            -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline(':', {
+              mapping = cmp.mapping.preset.cmdline(),
+              sources = cmp.config.sources({
+                { name = 'path' }
+              }, {
+                { name = 'cmdline' }
+              })
+            })
+            '';
+          deps = [
+            (lazyPlugin "hrsh7th/cmp-vsnip" {
+              deps = [ (lazyPlugin "hrsh7th/vim-vsnip" {}) ];
+            })
+            (lazyPlugin "dundalek/lazy-lsp.nvim" {
+              config = ''
+                require("lazy-lsp").setup({
+                  excluded_servers = {
+                    "sqls"
+                  },
+                  default_config = {
+                    capabilities = require('cmp_nvim_lsp').default_capabilities(),
+                  },
+                  configs = {
+                    zls = {
+                      cmd = { "${inputs.zls.packages.${pkgs.system}.zls}/bin/zls" },
+                    }
+                  }
+                })
+                vim.api.nvim_create_autocmd('LspAttach', {
+                  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+                  callback = function(ev)
+                    -- Buffer local mappings.
+                    -- See `:help vim.lsp.*` for documentation on any of the below functions
+                    local opts = { buffer = ev.buf }
+                    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+                    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+                    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+                    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+                    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+                    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+                    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+                    vim.keymap.set('n', '<space>wl', function()
+                      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+                    end, opts)
+                    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+                    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+                    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+                    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+                    vim.keymap.set('n', '<space>f', function()
+                      vim.lsp.buf.format { async = true }
+                    end, opts)
+                  end,
+                })
+              '';
+              deps = [
+                (lazyPlugin "neovim/nvim-lspconfig" {})
+                (lazyPlugin "hrsh7th/cmp-nvim-lsp" { opts = ""; })
+                (lazyPlugin "ziglang/zig.vim" {
+                  fts = [ "zig" "zir" ];
+                  init = "vim.cmd [[ au BufRead,BufNewFile *.zon setfiletype zig ]]";
+                })
+                (lazyPlugin "DingDean/wgsl.vim" {})
+                (lazyPlugin "cespare/vim-toml" {})
+                (lazyPlugin "hashivim/vim-terraform" {})
+              ];
+            })
+            (lazyPlugin "hrsh7th/cmp-path" {})
+            (lazyPlugin "hrsh7th/cmp-cmdline" {})
+            (lazyPlugin "hrsh7th/cmp-git" {})
+          ];
+        })
+        (lazyPlugin "tpope/vim-abolish" {})
+        (lazyPlugin "lambdalisue/suda.vim" {
+          init = ''
+            vim.cmd [[ let g:suda#nopass = 1 ]]
+            vim.cmd [[ autocmd BufEnter,BufWrite,BufRead * set noro ]]
+            '';
+        })
+      ];
+    in [{
+      plugin = pkgs.vimPlugins.lazy-nvim;
+      type = "lua";
+      config = ''
+        require('lazy').setup({
+          ${concatStringsSep "," lazyPlugins}
+        })
+        '';
+    }];
     programs.neovim.extraConfig = ''
+      set noswapfile
+      set background=dark
+
       " {{{ Bemenu support
       function! Chomp(str)
         return escape(substitute(a:str, '\n$', "", ""), '\\/.*$^~[]#')
