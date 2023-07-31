@@ -3,6 +3,7 @@ with lib;
 # TODO: eww window for logout shutdown and reboot
 # TODO: test eww fork with system tray
 # TODO: theme dunst
+# TODO: use https://github.com/Duckonaut/split-monitor-workspaces
 let
   cfg = config.programs.hyprland-desktop;
 
@@ -626,7 +627,13 @@ in {
       '' + concatStringsSep "\n" (imap1 (ni: _: let i = toString ni; in ''
         bind = SUPER, F${i}, workspace, ${i}
         bind = SUPER SHIFT, F${i}, movetoworkspacesilent, ${i}
+        workspace = ${i},monitor:HDMI-A-1${if i == "1" then ",default:true" else ""}
       '') cfg.workspaces) + ''
+      '' + concatMapStringsSep "\n" (x: let i = toString (x - 1); n = toString x; in ''
+        bind = SUPER, ${n}, focusmonitor, ${i}
+        bind = SUPER SHIFT, ${n}, movewindow, mon:${i}
+      '') (range 1 9)
+      + ''
 
       bind = ,XF86AudioRaiseVolume, exec, ${concatStringsSep " " cfg.volumeRaiseCmd}
       bind = ,XF86AudioLowerVolume, exec, ${concatStringsSep " " cfg.volumeLowerCmd}
