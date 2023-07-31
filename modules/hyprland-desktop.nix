@@ -463,7 +463,7 @@ in {
         :geometry (geometry :x "0%"
                             :y "0%"
                             :width "100%"
-                            :height "10px"
+                            :height "32px"
                             :anchor "top center")
         :reserve (struts :side "top" :distance "4%")
         (bar))
