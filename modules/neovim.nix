@@ -354,8 +354,8 @@ with lib;
       nnoremap <silent> :strip :%s/[<C-V>128-<C-V>255<C-V>01-<C-V>31]//g<CR>
 
       " tab aliases
-      nmap <C-e> :tabnext<CR>
-      nmap <C-q> :tabprev<CR>
+      nmap <C-e> :BufferLineCycleNext<CR>
+      nmap <C-q> :BufferLineCyclePrev<CR>
       " }}}
       " {{{Autocheck file changes
       set autoread
