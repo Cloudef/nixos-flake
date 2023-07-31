@@ -59,9 +59,16 @@ with lib;
       '';
   }) users;
 
-  fonts.packages = with pkgs; [
-    nerdfonts
-  ];
+  fonts = let
+    packages = with pkgs; [
+      nerdfonts
+    ];
+  in if (pkgs.stdenv.isLinux) then {
+    packages = packages;
+  } else {
+    # darwin hasn't yet migrated to the new syntax
+    fonts = packages;
+  };
 
   environment.systemPackages = let
     vimo = pkgs.writeShellApplication {
