@@ -9,12 +9,11 @@ with lib;
   nix.gc.dates = "weekly";
 
   boot.kernelPackages = pkgs.linuxPackages_xanmod;
-  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "digimend" ];
+  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" ];
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = [
     config.boot.kernelPackages.xpadneo
     config.boot.kernelPackages.hid-nintendo
-    config.boot.kernelPackages.digimend
   ];
 
   # Allow current console users to add virtual input devices
@@ -40,6 +39,7 @@ with lib;
   hardware.opengl.driSupport = true;
   hardware.opengl.driSupport32Bit = true; # X86 specific ?
   hardware.bluetooth.enable = true;
+  hardware.opentabletdriver.enable = true;
 
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
