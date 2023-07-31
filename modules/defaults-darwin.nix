@@ -1,4 +1,7 @@
 { config, lib, pkgs, inputs, users, ... }:
+# TODO: install alacritty.info (currently done manually)
+#       sudo tic -e alacritty,alacritty-direct alacritty.info
+#       https://raw.githubusercontent.com/alacritty/alacritty/master/extra/alacritty.info
 with lib;
 {
   imports = [
