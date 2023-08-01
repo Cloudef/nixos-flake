@@ -21,6 +21,10 @@ with lib;
     }
     '';
 
+  environment.systemPackages = with pkgs; [
+    ripgrep
+  ];
+
   home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: {
     programs.neovim.enable = true;
     programs.neovim.viAlias = true;
@@ -65,11 +69,24 @@ with lib;
             '';
         })
         (lazyPlugin "tpope/vim-rsi" {})
+        (lazyPlugin "farmergreg/vim-lastplace" {})
         (lazyPlugin "echasnovski/mini.nvim" {
           deps = [
             (lazyPlugin "nvim-treesitter/nvim-treesitter" { opts = ""; })
             (lazyPlugin "lewis6991/gitsigns.nvim" { opts = ""; })
             (lazyPlugin "nvim-tree/nvim-web-devicons" { opts = ""; })
+            (lazyPlugin "nvim-telescope/telescope.nvim" {
+              opts = "";
+              init = ''
+                builtin = require('telescope.builtin')
+                vim.keymap.set('n', '<C-f>', builtin.find_files, {})
+                vim.keymap.set('n', '<C-r>', builtin.git_files, {})
+                vim.keymap.set('n', '<C-g>', builtin.live_grep, {})
+                vim.keymap.set('n', '<C-s>', builtin.lsp_document_symbols, {})
+                vim.keymap.set('n', '<C-b>', builtin.buffers, {})
+                '';
+              deps = [ (lazyPlugin "nvim-lua/plenary.nvim" {}) ];
+            })
             (lazyPlugin "akinsho/bufferline.nvim" { opts = ""; })
             (lazyPlugin "DanilaMihailov/beacon.nvim" {})
             (lazyPlugin "folke/todo-comments.nvim" { opts = ""; })
@@ -174,7 +191,7 @@ with lib;
             cmp.setup({
               snippet = {
                 expand = function(args)
-                  vim.fn["vsnip#anonymous"](args.body)
+                  require('snippy').expand_snippet(args.body)
                 end,
               },
               window = {
@@ -191,7 +208,7 @@ with lib;
               }),
               sources = cmp.config.sources({
                 { name = 'nvim_lsp' },
-                { name = 'vsnip' },
+                { name = 'snippy' },
               }, {})
             })
 
@@ -219,8 +236,20 @@ with lib;
             })
             '';
           deps = [
-            (lazyPlugin "hrsh7th/cmp-vsnip" {
-              deps = [ (lazyPlugin "hrsh7th/vim-vsnip" {}) ];
+            (lazyPlugin "dcampos/cmp-snippy" {
+              deps = [ (lazyPlugin "dcampos/nvim-snippy" {
+                  opts = ''
+                    mappings = {
+                      is = {
+                        ['<Tab>'] = 'expand_or_advance',
+                        ['<S-Tab>'] = 'previous',
+                      },
+                      nx = {
+                        ['<leader>x'] = 'cut_text',
+                      },
+                    },
+                    '';
+                }) ];
             })
             (lazyPlugin "dundalek/lazy-lsp.nvim" {
               config = ''
@@ -302,62 +331,20 @@ with lib;
       set noswapfile
       set background=dark
 
-      " {{{ Bemenu support
-      function! Chomp(str)
-        return escape(substitute(a:str, '\n$', "", ""), '\\/.*$^~[]#')
-      endfunction
-
-      function! BemenuOpen(cmd)
-        let g:gtdir = Chomp(system("git rev-parse --show-toplevel 2>/dev/null"))
-        if empty(g:gtdir)
-          return
-        endif
-        let g:cmd = a:cmd
-        function! BemenuOnExit(job_id, data, event)
-          let fname = Chomp(getline(1, '$')[0])
-          close
-          if a:data != 0 || empty(fname)
-            return
-          endif
-          execute g:cmd." ".g:gtdir."/".fname
-        endfunction
-        new
-        setl buftype=nofile bufhidden=wipe nobuflisted nonumber
-        call termopen("cd ".g:gtdir."; git ls-files 2>/dev/null | BEMENU_BACKEND=curses bemenu -i -l 20 --ifne -p ".a:cmd, {'on_exit': 'BemenuOnExit'})
-      endfunction
-      " use ctrl-t to open file in a new tab
-      " use ctrl-f to open file in current buffer
-      map <c-t> :call BemenuOpen("tabe")<cr>
-      map <c-f> :call BemenuOpen("edit")<cr>
-      map <c-g> :call BemenuOpen("split")<cr>
-      " }}}
-      " {{{ Aliases
-      " {{{ Tab change functions
-      function SetTab(var1)
-        let level=a:var1
-        execute "set softtabstop=".level
-        execute "set shiftwidth=".level
-        :IndentGuidesToggle
-        :IndentGuidesToggle
-      endfunction
-      " }}}
-      " allow saving of files as sudo when I forgot to start vim using sudo.
-      cmap w!! w !sudo tee > /dev/null %
-
-      " change tab settings
+      " Change tab settings
       nnoremap <silent> :8t :call SetTab(8)<CR>
       nnoremap <silent> :4t :call SetTab(4)<CR>
       nnoremap <silent> :3t :call SetTab(3)<CR>
       nnoremap <silent> :2t :call SetTab(2)<CR>
 
-      " strip non ascii characters from file
+      " Strip non ascii characters from file
       nnoremap <silent> :strip :%s/[<C-V>128-<C-V>255<C-V>01-<C-V>31]//g<CR>
 
-      " tab aliases
+      " Tab aliases
       nmap <C-e> :BufferLineCycleNext<CR>
       nmap <C-q> :BufferLineCyclePrev<CR>
-      " }}}
-      " {{{Autocheck file changes
+
+      " Autocheck file changes
       set autoread
       augroup checktime
         au!
@@ -369,80 +356,11 @@ with lib;
           autocmd CursorMovedI    * silent! checktime
         endif
       augroup END
-      " }}}
-      " {{{ Keep folds closed on insert mode
-      autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
-      autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
-      " }}}
-      " {{{ Automatically cd into the directory that the file is in
+
+      " Automatically cd into the directory that the file is in
       autocmd BufEnter * execute "chdir ".escape(expand("%:p:h"), ' \\/.*$^~[]#')
-      " }}}
-      " {{{ Remove any trailing whitespace that is in the file
+      " Remove any trailing whitespace that is in the file
       autocmd BufRead,BufWrite * if ! &bin | silent! %s/\s\+$//ge | endif
-      " }}}
-      " {{{ Restore cursor position to where it was before on file open
-      augroup JumpCursorOnEdit
-        au!
-        autocmd BufReadPost *
-          \ if expand("<afile>:p:h") !=? $TEMP |
-          \   if line("'\"") > 1 && line("'\"") <= line("$") |
-          \     let JumpCursorOnEdit_foo = line("'\"") |
-          \     let b:doopenfold = 1 |
-          \     if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
-          \        let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
-          \        let b:doopenfold = 2 |
-          \     endif |
-          \     exe JumpCursorOnEdit_foo |
-          \   endif |
-          \ endif
-        " Need to postpone using "zv" until after reading the modelines.
-        autocmd BufWinEnter *
-          \ if exists("b:doopenfold") |
-          \   exe "normal zv" |
-          \   if(b:doopenfold > 1) |
-          \       exe  "+".1 |
-          \   endif |
-          \   unlet b:doopenfold |
-          \ endif
-      augroup END
-      " }}}
-      " {{{Simple custom tabline
-      function SimpleTabLine()
-        let s = ""
-        for i in range(tabpagenr('$'))
-          " select the highlighting
-          if i + 1 == tabpagenr()
-            let s .= '%#TabLineSel#'
-          else
-            let s .= '%#TabLine#'
-          endif
-
-          " set the tab page number (for mouse clicks)
-          let s .= '%' . (i + 1) . 'T'
-          let s .= ' %{SimpleTabLabel(' . (i + 1) . ')} '
-        endfor
-
-        " after the last tab fill with TabLineFill and reset tab page nr
-        let s .= '%#TabLineFill#%T'
-        return s
-      endfunction
-
-      function SimpleTabLabel(n)
-        let label = ""
-        let buflist = tabpagebuflist(a:n)
-        for bufnr in buflist
-          if getbufvar(bufnr, "&modified")
-            let label = '+'
-            break
-          endif
-        endfor
-        let winnr = tabpagewinnr(a:n)
-        let fn = bufname(buflist[winnr - 1])
-        let lastSlash = strridx(fn, '/')
-        return label . strpart(fn, lastSlash + 1, strlen(fn))
-      endfunction
-      set tabline=%!SimpleTabLine()
-      " }}}
       '';
   }) (filterAttrs (n: v: n != "root") users);
 }
