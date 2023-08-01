@@ -169,7 +169,7 @@ let
     name = "proton";
     runtimeInputs = with pkgs; [ gamemode gamescope steam-mod.run procps ];
     text = ''
-      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:--i -n}"
+      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:-"-S integer -F nearest"}"
       mkdir -p "''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
       export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
@@ -180,7 +180,7 @@ let
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0 \
       vk_xwayland_wait_ready=false \
       WINEDLLOVERRIDES=dxgi=n \
-        gamemoderun gamescope --fullscreen --fsr-upscaling \
+        gamemoderun gamescope --fullscreen \
           -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
           -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
           -o ${toString cfg.unfocusedFramerate} \
