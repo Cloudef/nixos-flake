@@ -128,6 +128,7 @@ with lib;
   fonts.fontconfig.subpixel.rgba = "rgb";
   fonts.fontconfig.subpixel.lcdfilter = "default";
 
+  programs.corectrl.enable = true;
   programs.gamemode.enable = true;
   programs.gamemode.enableRenice = true;
   programs.gamemode.settings.general.inhibit_screensaver = 0;
