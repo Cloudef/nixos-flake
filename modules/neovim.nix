@@ -70,6 +70,22 @@ with lib;
         })
         (lazyPlugin "tpope/vim-rsi" {})
         (lazyPlugin "farmergreg/vim-lastplace" {})
+        (lazyPlugin "moll/vim-bbye" {
+          init = ''
+            vim.cmd [[
+              fun! QuitIfLast()
+                  execute 'Bdelete'
+                  let bufcnt = len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
+                  if bufcnt < 1
+                      echo 'shutting everything down'
+                      execute 'quit'
+                  endif
+              endfun
+              cnoreabbrev wq w<bar>:call QuitIfLast()<CR>
+              cnoreabbrev  q       :call QuitIfLast()<CR>
+            ]]
+            '';
+        })
         (lazyPlugin "echasnovski/mini.nvim" {
           deps = [
             (lazyPlugin "nvim-treesitter/nvim-treesitter" { opts = ""; })
