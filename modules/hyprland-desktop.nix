@@ -481,23 +481,17 @@ in {
         all: unset;
         background-color: #D35D6E;
         color: #000000;
-        border-radius: 10px;
-      }
-
-      .metric scale trough highlight {
-        all: unset;
-        background-color: #D35D6E;
-        color: #000000;
-        border-radius: 10px;
+        border-radius: 0px;
       }
 
       .metric scale trough {
         all: unset;
         background-color: #4e4e4e;
-        border-radius: 50px;
+        border-radius: 0px;
         min-height: 10px;
         min-width: 80px;
-        margin-left: 10px;
+        margin-left: 20px;
+        margin-bottom: 2px;
       }
 
       .workspaces button:hover {
@@ -704,9 +698,32 @@ in {
         Install.WantedBy = [ "hyprland-session.target" ];
       };
 
-      systemd.user.services.dunst = {
+      systemd.user.services.dunst = let
+        config = pkgs.writeText "dunst.conf" ''
+          [global]
+          offset = 8x10
+          follow = mouse
+          frame_width = 1
+          frame_color = "#d81860"
+          gap_size = 4
+          icon_theme = "Papirus-Dark, Adwaita"
+          font = Monospace 9
+
+          [urgency_low]
+          background = "#121212"
+          foreground = "#d81860"
+
+          [urgency_normal]
+          background = "#121212"
+          foreground = "#d81860"
+
+          [urgency_critical]
+          background = "#121212"
+          foreground = "#d81860"
+          '';
+      in {
         Unit.Description = "Dunst notification daemon";
-        Service.ExecStart = "${pkgs.dunst}/bin/dunst";
+        Service.ExecStart = "${pkgs.dunst}/bin/dunst -config ${config}";
         Service.Restart = "on-failure";
         Install.WantedBy = [ "hyprland-session.target" ];
       };
