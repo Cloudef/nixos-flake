@@ -11,9 +11,9 @@ with lib;
   boot.kernelPackages = pkgs.linuxPackages_xanmod;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" ];
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
-  boot.extraModulePackages = [
-    config.boot.kernelPackages.xpadneo
-    config.boot.kernelPackages.hid-nintendo
+  boot.extraModulePackages = with config.boot.kernelPackages; [
+    xpadneo
+    hid-nintendo
   ];
 
   # Allow current console users to add virtual input devices
