@@ -28,6 +28,8 @@ with lib;
     fileSystems = [ "/" ];
   };
 
+  services.udisks2.enable = true;
+
   boot.tmp.useTmpfs = true;
 
   zramSwap.enable = true;
@@ -185,6 +187,8 @@ with lib;
       fcitx5-mozc
       fcitx5-gtk
     ];
+    services.udiskie.enable = true;
+    services.udiskie.tray = "never";
   }) (filterAttrs (n: v: n != "root") users);
 
   environment.sessionVariables.BROWSER = "${pkgs.firefox}/bin/firefox";
