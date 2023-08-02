@@ -156,6 +156,7 @@ with lib;
     krita
     webcord-vencord
     zathura
+    transmission-gtk
     powertop
     iotop
     config.boot.kernelPackages.perf
