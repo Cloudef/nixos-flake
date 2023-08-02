@@ -423,7 +423,7 @@ in {
           "⏶ ''${interface != "" ? round(EWW_NET[interface].NET_UP / 1024, 2) : 0} KB" "⏷ ''${interface != "" ? round(EWW_NET[interface].NET_DOWN / 1024, 2) : 0} KB"
           "GPU ''${round(EWW_TEMPS["AMDGPU_JUNCTION"], 0)}°C"
           "VRM ''${round(EWW_TEMPS["ASUSEC_VRM"], 0)}°C"
-          (metric :label "CPU ''${round(EWW_TEMPS["NCT6798_TSI0_TEMP"], 0)}°C"
+          (metric :label "CPU ''${round(EWW_TEMPS["ZENPOWER_Tdie"], 0)}°C"
                   :value {round(EWW_CPU.avg, 0)}
                   :onchange "")
           (metric :label "RAM"

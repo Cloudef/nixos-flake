@@ -5,7 +5,9 @@ with lib;
   fileSystems."/".options = [ "ssd" "compress=zstd" "noatime" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelModules = [ "nct6775" ];
+  boot.extraModulePackages = with config.boot.kernelPackages; [ zenpower ];
+  boot.kernelModules = [ "nct6775" "zenpower" ];
+  boot.kernelParams = [ "amd_pstate=active" ];
   boot.blacklistedKernelModules = [ "k10temp" ];
 
   hardware.cpu.amd.updateMicrocode = true;
