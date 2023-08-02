@@ -383,7 +383,13 @@ in {
       wlroots = prev.wlroots.overrideAttrs (_: { mesonBuildType = "debug"; dontStrip = true; hardeningDisable = [ "fortify" ]; });
     })];
 
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = let
+      spacefm = pkgs.writeShellApplication {
+        name = "spacefm";
+        runtimeInputs = with pkgs; [ spaceFM unzip unrar p7zip ];
+        text = ''GDK_BACKEND=x11 exec spacefm "$@"'';
+      };
+    in with pkgs; [
       cfg.cursorThemePackage
       cfg.finalPackage
       hyprshot
@@ -391,6 +397,7 @@ in {
       imv
       wbg
       ja-en-translator
+      spacefm
     ];
 
     # TODO: temps are hardcoded
