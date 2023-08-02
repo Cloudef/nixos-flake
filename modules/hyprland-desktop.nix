@@ -488,16 +488,16 @@ in {
         all: unset;
         background-color: #D35D6E;
         color: #000000;
-        border-radius: 0px;
+        border-radius: 4px;
       }
 
       .metric scale trough {
         all: unset;
         background-color: #4e4e4e;
-        border-radius: 0px;
+        border-radius: 4px;
         min-height: 10px;
         min-width: 80px;
-        margin-left: 20px;
+        margin-left: 18px;
         margin-bottom: 2px;
       }
 
