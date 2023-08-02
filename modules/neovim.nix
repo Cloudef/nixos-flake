@@ -96,7 +96,7 @@ with lib;
               init = ''
                 builtin = require('telescope.builtin')
                 vim.keymap.set('n', '<C-f>', builtin.find_files, {})
-                vim.keymap.set('n', '<C-r>', builtin.git_files, {})
+                vim.keymap.set('n', '<C-t>', builtin.git_files, {})
                 vim.keymap.set('n', '<C-g>', builtin.live_grep, {})
                 vim.keymap.set('n', '<C-s>', builtin.lsp_document_symbols, {})
                 vim.keymap.set('n', '<C-b>', builtin.buffers, {})
