@@ -35,6 +35,7 @@ with lib;
   zramSwap.enable = true;
   zramSwap.algorithm = "zstd";
 
+  powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "schedutil";
 
   hardware.opengl.enable = true;
@@ -131,6 +132,7 @@ with lib;
   fonts.fontconfig.subpixel.lcdfilter = "default";
 
   programs.corectrl.enable = true;
+  programs.corectrl.gpuOverclock.enable = true;
   programs.gamemode.enable = true;
   programs.gamemode.enableRenice = true;
   programs.gamemode.settings.general.inhibit_screensaver = 0;
