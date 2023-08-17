@@ -82,6 +82,15 @@ with lib;
         '';
     };
 
+    nrun = pkgs.writeShellApplication {
+      name = "nrun";
+      runtimeInputs = with pkgs; [ coreutils gnused bemenu ];
+      text = ''
+        pkg="$(nix-locate --minimal --top-level '/bin/' | grep -v '^_' | sed 's/\.out$//' | sort -u | bemenu)"
+        NIXPKGS_ALLOW_UNFREE=1 nix run --impure "nixpkgs#$pkg" -- "$@"
+        '';
+    };
+
     psmenu = pkgs.writeShellApplication {
       name = "psmenu";
       runtimeInputs = with pkgs; [ procps bemenu ];
@@ -94,6 +103,7 @@ with lib;
     };
   in with pkgs; [
     vimo
+    nrun
     psmenu
     bemenu
     fishPlugins.forgit
