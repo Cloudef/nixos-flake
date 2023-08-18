@@ -560,10 +560,12 @@ in {
 
       decoration {
         rounding = 0
-        blur = true
-        blur_size = 3
-        blur_passes = 3
-        blur_new_optimizations = true
+        blur {
+          enabled = true
+          size = 3
+          passes = 3
+          new_optimizations = true
+        }
         drop_shadow = true
         shadow_ignore_window = true
         shadow_offset = 0 5
