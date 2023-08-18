@@ -77,6 +77,8 @@ let
       }
 
       # patch badly written plugins and fix permissions initally
+      mkdir -p "$HOME"/.steam/deckyloader/services
+      mkdir -p "$HOME"/.steam/deckyloader/plugins
       chmod -R u=rwX,go=rX "$HOME"/.steam/deckyloader
       (grep -rlF '/home/deck/' "$HOME"/.steam/deckyloader/plugins || true) | while read -r path; do patch_plug "$path"; done
 
