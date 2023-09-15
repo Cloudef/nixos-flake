@@ -31,7 +31,9 @@ with lib;
   boot.tmp.useTmpfs = true;
 
   zramSwap.enable = true;
+  zramSwap.memoryPercent = 150;
   zramSwap.algorithm = "zstd";
+  boot.kernel.sysctl."vm_swappiness" = 200;
 
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "schedutil";
