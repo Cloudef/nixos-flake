@@ -4,13 +4,7 @@ with lib;
   # XXX: mode does not exist on darwin
   # environment.etc."xdg/zls.json".mode = "0444";
   environment.etc."xdg/zls.json".text = let
-    nix-zig-stdenv = pkgs.fetchFromGitHub {
-      owner = "Cloudef";
-      repo = "nix-zig-stdenv";
-      rev = "9510f9f3fdb73a2c4f476e4db12d61e23fd73d45";
-      hash = "sha256-g/+wbyQwYrJZxGNB6wFJPGRAfjLqDhQuAz85rI1bxVk=";
-    };
-    zig = (import "${nix-zig-stdenv}/versions.nix" { inherit pkgs; inherit (pkgs) system; }).master;
+    zig = inputs.zig.versions.${pkgs.system}.master;
   in ''
     {
       "zig_exe_path": "${zig}/bin/zig",

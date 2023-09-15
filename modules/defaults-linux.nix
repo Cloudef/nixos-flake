@@ -19,6 +19,7 @@ with lib;
   services.fwupd.enable = true;
   services.irqbalance.enable = true;
 
+  services.smartd.enable = true;
   services.fstrim.enable = true;
   services.btrfs.autoScrub = mkIf (config.fileSystems."/".fsType == "btrfs") {
     enable = true;
@@ -57,7 +58,7 @@ with lib;
     uid = params.uid;
     isNormalUser = true;
     extraGroups = params.groups;
-    passwordFile = "/etc/nixos/secrets/${user}/hashed_password";
+    hashedPasswordFile = "/etc/nixos/secrets/${user}/hashed_password";
   }) (filterAttrs (n: v: n != "root") users);
 
   # For now all my setups are single user, in any case it would be nicer if user had parameter
@@ -143,6 +144,7 @@ with lib;
   environment.systemPackages = with pkgs; [
     sshfs-fuse
     coreutils
+    smartmontools
     lshw
     btdu
     lm_sensors
@@ -153,7 +155,7 @@ with lib;
     scanmem
     blender
     krita
-    webcord-vencord
+    webcord
     zathura
     transmission-gtk
     powertop

@@ -131,19 +131,9 @@ let
             activewindow)
               ;;
             activewindowv2)
-              if [[ "$(hyprctl activewindow -j | jaq -r .fullscreen)" == "true" ]]; then
-                hyprctl dispatch exec eww close bar >/dev/null
-              else
-                hyprctl dispatch exec eww open bar >/dev/null
-              fi
               hyprctl dispatch exec eww update window="$arg1" >/dev/null
               ;;
             fullscreen)
-              if [[ "$arg1" == 1 ]]; then
-                hyprctl dispatch exec eww close bar >/dev/null
-              else
-                hyprctl dispatch exec eww open bar >/dev/null
-              fi
               ;;
             monitorremoved)
               ;;
@@ -660,9 +650,7 @@ in {
     xdg.portal.enable = true;
     xdg.portal.extraPortals = [
       (inputs.hyprland.inputs.xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland.override {
-        hyprland-share-picker = inputs.hyprland.inputs.xdph.packages.${pkgs.stdenv.hostPlatform.system}.hyprland-share-picker.override {
-          hyprland = cfg.finalPackage;
-        };
+        hyprland = cfg.finalPackage;
       })
     ];
 

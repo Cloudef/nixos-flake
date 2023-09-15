@@ -7,7 +7,9 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    zls.url = "github:zigtools/zls?rev=0fd226012324e4461b5b301d02f9e23747f9059b";
+    zig.url = "github:Cloudef/nix-zig-stdenv";
+    zig.inputs.nixpkgs.follows = "nixpkgs";
+    zls.url = "github:zigtools/zls";
     zls.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland";
     hyprland.inputs.nixpkgs.follows = "nixpkgs";
@@ -23,7 +25,7 @@
         };
         nix = {
           uid = 1000;
-          groups = [ "wheel" "input" "adbusers" "corectrl" ];
+          groups = [ "wheel" "input" "dialout" "adbusers" "corectrl" ];
           git.name = "Jari Vetoniemi";
           git.email = "jari.vetoniemi@cloudef.pw";
         };
