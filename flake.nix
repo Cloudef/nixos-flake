@@ -2,7 +2,9 @@
   description = "NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    # XXX: locked kernel nixpkgs due to stage-1 not booting with nvme :/
+    # nixpkgs.url = "github:NixOS/nixpkgs/a744633b66dfce3f606a8f95a29011979583b70d";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
@@ -36,7 +38,10 @@
         cpu = "amd";
       in nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
-        specialArgs = { inherit users mainUser; inherit (self) inputs; };
+        specialArgs = {
+          inherit users mainUser;
+          inherit (self) inputs;
+        };
         modules = [
           ./modules/system/${system}-${cpu}/configuration.nix
           ./modules/defaults-linux.nix

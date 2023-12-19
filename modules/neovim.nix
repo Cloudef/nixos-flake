@@ -11,7 +11,8 @@ with lib;
       "zig_lib_path": "${zig}/lib",
       "warn_style": true,
       "highlight_global_var_declarations": true,
-      "include_at_in_builtins": true
+      "include_at_in_builtins": true,
+      "enable_autofix": true
     }
     '';
 
@@ -312,6 +313,7 @@ with lib;
                 (lazyPlugin "DingDean/wgsl.vim" {})
                 (lazyPlugin "cespare/vim-toml" {})
                 (lazyPlugin "hashivim/vim-terraform" {})
+                (lazyPlugin "evanleck/vim-svelte" {})
               ];
             })
             (lazyPlugin "hrsh7th/cmp-path" {})

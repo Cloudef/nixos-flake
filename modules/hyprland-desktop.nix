@@ -519,7 +519,7 @@ in {
     environment.etc."xdg/hyprland.conf".text = ''
       exec-once = ${cfg.finalPackage}/bin/hyprctl setcursor ${cfg.cursorThemePackage.pname} 24
       exec-once = ${pkgs.wbg}/bin/wbg ${cfg.wallpaper}
-      exec-once = ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && /run/current-system/systemd/bin/systemctl --user start hyprland-session.target
+      exec-once = sleep 1 && ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && /run/current-system/systemd/bin/systemctl --user start hyprland-session.target
       exec-once = ${config.programs.eww.finalPackage}/bin/eww open bar
       exec = /run/current-system/systemd/bin/systemctl --user restart pipewire-event-handler.service
       exec = /run/current-system/systemd/bin/systemctl --user restart hyprland-event-handler.service
@@ -528,7 +528,6 @@ in {
       map (x: "exec = ${concatStringsSep " " x}") cfg.extraExec ++
       map (x: "monitor = ${x}") cfg.monitors
     ) + ''
-
       input {
         kb_layout = ${config.console.keyMap}
         follow_mouse = 1
@@ -653,6 +652,7 @@ in {
         hyprland = cfg.finalPackage;
       })
     ];
+    xdg.portal.config.common.default = "*";
 
     home-manager.users = let
       rootConfig = config;
@@ -681,11 +681,16 @@ in {
       };
 
       systemd.user.services.way-displays = let
+        # TODO: handle primary monitor
         config = pkgs.writeText "config.yaml" ''
+          ALIGN: BOTTOM
           AUTO_SCALE: false
           MODE:
-            - NAME_DESC: !.*
+            - NAME_DESC: '!.*$'
               MAX: true
+          ORDER:
+            - 'HDMI-A-1'
+            - '!.*$'
           '';
       in mkIf (cfg.monitors == []) {
         Unit.Description = "Wayland automatic display manager";

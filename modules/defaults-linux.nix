@@ -8,7 +8,8 @@ with lib;
 
   nix.gc.dates = "weekly";
 
-  boot.kernelPackages = pkgs.linuxPackages_xanmod;
+  boot.supportedFilesystems = [ "btrfs" "ntfs" "exfat" ];
+  boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" ];
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
@@ -110,7 +111,7 @@ with lib;
   services.openssh.settings.PermitRootLogin = "no";
 
   services.avahi.enable = true;
-  services.avahi.nssmdns = true;
+  services.avahi.nssmdns4 = true;
   services.avahi.publish.enable = true;
   services.avahi.publish.addresses = true;
   services.avahi.publish.domain = true;
