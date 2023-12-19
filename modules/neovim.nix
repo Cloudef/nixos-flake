@@ -73,7 +73,7 @@ with lib;
                   let bufcnt = len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
                   if bufcnt < 1
                       echo 'shutting everything down'
-                      execute 'quit'
+                      execute 'quit!'
                   endif
               endfun
               cnoreabbrev wq w<bar>:call QuitIfLast()<CR>
