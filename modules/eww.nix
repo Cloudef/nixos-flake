@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 with lib;
 let
   cfg = config.programs.eww;
@@ -40,6 +40,10 @@ in {
   };
 
   config = mkIf cfg.enable {
+    nixpkgs.overlays = [
+      inputs.rust-overlay.overlays.default
+      inputs.eww.overlays.default
+    ];
     environment.systemPackages = [ cfg.finalPackage ];
     environment.etc."xdg/eww/eww.yuck".text = cfg.yuck;
     environment.etc."xdg/eww/eww.scss".text = cfg.scss;

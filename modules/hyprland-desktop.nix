@@ -313,9 +313,22 @@ in {
         '';
     };
 
+    primaryMonitor = mkOption {
+      type = types.attrs;
+      default = {
+        name = "DELL S2722DC";
+        adapter = "HDMI-A-1";
+        resolution = "highres";
+        scale = "1";
+      };
+      description = mdDoc ''
+        Primary monitor config.
+        '';
+    };
+
     monitors = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [",highres,auto,1"];
       description = mdDoc ''
         Monitor configuration.
         '';
@@ -452,7 +465,7 @@ in {
                  :onchange onchange)))
 
       (defwindow bar
-        :monitor 0
+        :monitor "${cfg.primaryMonitor.name}"
         :windowtype "dock"
         :exclusive true
         :focusable false
@@ -526,8 +539,10 @@ in {
     '' + concatStringsSep "\n" (
       map (x: "exec-once = ${concatStringsSep " " x}") cfg.extraExecOnce ++
       map (x: "exec = ${concatStringsSep " " x}") cfg.extraExec ++
+      [ "monitor = ${cfg.primaryMonitor.adapter},${cfg.primaryMonitor.resolution},0x0,${cfg.primaryMonitor.scale}" ] ++
       map (x: "monitor = ${x}") cfg.monitors
     ) + ''
+
       input {
         kb_layout = ${config.console.keyMap}
         follow_mouse = 1
@@ -648,7 +663,7 @@ in {
     security.polkit.enable = true;
     xdg.portal.enable = true;
     xdg.portal.extraPortals = [
-      (inputs.hyprland.inputs.xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland.override {
+      (inputs.hyprland.inputs.xdph.packages.${pkgs.system}.xdg-desktop-portal-hyprland.override {
         hyprland = cfg.finalPackage;
       })
     ];
@@ -676,25 +691,6 @@ in {
       systemd.user.services.pipewire-event-handler = {
         Unit.Description = "Pipewire event handler";
         Service.ExecStart = "${pipewire-event-handler}/bin/pipewire-event-handler";
-        Service.Restart = "on-failure";
-        Install.WantedBy = [ "hyprland-session.target" ];
-      };
-
-      systemd.user.services.way-displays = let
-        # TODO: handle primary monitor
-        config = pkgs.writeText "config.yaml" ''
-          ALIGN: BOTTOM
-          AUTO_SCALE: false
-          MODE:
-            - NAME_DESC: '!.*$'
-              MAX: true
-          ORDER:
-            - 'HDMI-A-1'
-            - '!.*$'
-          '';
-      in mkIf (cfg.monitors == []) {
-        Unit.Description = "Wayland automatic display manager";
-        Service.ExecStart = "${pkgs.way-displays}/bin/way-displays --config ${config}";
         Service.Restart = "on-failure";
         Install.WantedBy = [ "hyprland-session.target" ];
       };
