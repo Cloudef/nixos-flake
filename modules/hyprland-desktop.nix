@@ -633,7 +633,7 @@ in {
       '' + concatStringsSep "\n" (imap1 (ni: _: let i = toString ni; in ''
         bind = SUPER, F${i}, workspace, ${i}
         bind = SUPER SHIFT, F${i}, movetoworkspacesilent, ${i}
-        workspace = ${i},monitor:HDMI-A-1${if i == "1" then ",default:true" else ""}
+        workspace = ${i},monitor:${cfg.primaryMonitor.name}${if i == "1" then ",default:true" else ""}
       '') cfg.workspaces) + ''
       '' + concatMapStringsSep "\n" (x: let i = toString (x - 1); n = toString x; in ''
         bind = SUPER, ${n}, focusmonitor, ${i}
