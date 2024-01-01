@@ -71,6 +71,25 @@ let
       '';
   };
 
+  monitor-wrangler = pkgs.writeShellApplication {
+    name = "monitor-wrangler";
+    runtimeInputs = with pkgs; [ cfg.finalPackage jaq ];
+    text = ''
+      # shellcheck disable=SC2016
+      id="$(hyprctl monitors -j | jaq --arg m "$2" 'sort_by(.x)[$m|tonumber].id' 2>/dev/null)"
+      if [[ "$id" ]]; then
+        case "$1" in
+          focusmonitor)
+            hyprctl dispatch focusmonitor "$id"
+            ;;
+          movewindow)
+            hyprctl dispatch movewindow mon:"$id"
+            ;;
+        esac
+      fi
+      '';
+  };
+
   pipewire-event-handler = pkgs.writeShellApplication {
     name = "pipewire-event-handler";
     runtimeInputs = with pkgs; [ pulseaudio cfg.finalPackage config.programs.eww.finalPackage gnugrep ];
@@ -636,8 +655,8 @@ in {
         workspace = ${i},monitor:${cfg.primaryMonitor.name}${if i == "1" then ",default:true" else ""}
       '') cfg.workspaces) + ''
       '' + concatMapStringsSep "\n" (x: let i = toString (x - 1); n = toString x; in ''
-        bind = SUPER, ${n}, focusmonitor, ${i}
-        bind = SUPER SHIFT, ${n}, movewindow, mon:${i}
+        bind = SUPER, ${n}, exec, ${monitor-wrangler}/bin/monitor-wrangler focusmonitor ${i}
+        bind = SUPER SHIFT, ${n}, exec, ${monitor-wrangler}/bin/monitor-wrangler movewindow ${i}
       '') (range 1 9)
       + ''
 
