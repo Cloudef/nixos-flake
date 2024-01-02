@@ -142,6 +142,8 @@ let
       export XCURSOR_THEME=steam
       export vk_xwayland_wait_ready=false
       export WINEDLLOVERRIDES=dxgi=n
+      export GAMESCOPE_NV12_COLORSPACE=k_EStreamColorspace_BT601
+      export WINE_CPU_TOPOLOGY="8:0,1,2,3,4,5,6,7"
 
       export ORIGINAL_WAYLAND_DISPLAY="$WAYLAND_DISPLAY"
 
@@ -182,6 +184,7 @@ let
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS=0 \
       vk_xwayland_wait_ready=false \
       WINEDLLOVERRIDES=dxgi=n \
+      WINE_CPU_TOPOLOGY="8:0,1,2,3,4,5,6,7" \
         gamemoderun gamescope --fullscreen \
           -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
           -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
