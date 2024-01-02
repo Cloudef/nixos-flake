@@ -208,10 +208,9 @@ in {
       default = { width = 2560; height = 1440; };
     };
 
-    # use 4K internal res by default, we downscale to 1440p
     internalResolution = mkOption {
       type = types.attrs;
-      default = { width = 3840; height = 2160; };
+      default = { width = 2560; height = 1440; };
     };
 
     unfocusedFramerate = mkOption {
