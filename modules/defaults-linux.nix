@@ -181,7 +181,6 @@ with lib;
   home-manager.users = let
     rootConfig = config;
   in mapAttrs (user: params: { config, pkgs, ... }: {
-    services.easyeffects.enable = true;
     gtk.enable = rootConfig.programs.dconf.enable;
     gtk.iconTheme.name = "Papirus-Dark";
     gtk.iconTheme.package = pkgs.papirus-icon-theme;
@@ -190,13 +189,24 @@ with lib;
     gtk.cursorTheme.package = pkgs.phinger-cursors;
     gtk.gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk.gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
+
     i18n.inputMethod.enabled = "fcitx5";
     i18n.inputMethod.fcitx5.addons = with pkgs; [
       fcitx5-mozc
       fcitx5-gtk
     ];
+
     services.udiskie.enable = true;
     services.udiskie.tray = "never";
+
+    services.easyeffects.enable = true;
+    systemd.user.services.shairport-sync = {
+      Unit.Description = "Apple AirPlay";
+      Unit.After = [ "network.target" "avahi-daemon.service" ];
+      Install.WantedBy = [ "multi-user.target" ];
+      Service.ExecStart = "${pkgs.shairport-sync}/bin/shairport-sync -v -o pw";
+      Service.Restart = "on-failure";
+    };
   }) (filterAttrs (n: v: n != "root") users);
 
   environment.sessionVariables.BROWSER = "${pkgs.firefox}/bin/firefox";
