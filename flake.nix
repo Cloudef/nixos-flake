@@ -2,8 +2,6 @@
   description = "NixOS configuration";
 
   inputs = {
-    # XXX: locked kernel nixpkgs due to stage-1 not booting with nvme :/
-    # nixpkgs.url = "github:NixOS/nixpkgs/a744633b66dfce3f606a8f95a29011979583b70d";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -19,6 +17,8 @@
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     eww.url = "github:elkowar/eww";
     eww.inputs.nixpkgs.follows = "nixpkgs";
+    local-daemon.url = "github:Cloudef/local-daemon";
+    local-daemon.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, nix-darwin, ... }: {
@@ -42,8 +42,10 @@
         cpu = "amd";
       in nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
-        specialArgs = {
-          inherit users mainUser;
+        specialArgs = let
+          local-daemon = self.inputs.local-daemon.packages.${system}.default;
+        in {
+          inherit users mainUser local-daemon;
           inherit (self) inputs;
         };
         modules = [
