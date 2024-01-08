@@ -2,7 +2,6 @@
 with lib;
 let
   cfg = config.programs.alacritty;
-  yamlFormat = pkgs.formats.yaml { };
 in {
   disabledModules = ["programs/alacritty.nix"];
 
@@ -18,66 +17,78 @@ in {
 
     finalPackage = let
       wrapped = pkgs.writeScriptBin "alacritty" ''
-        ${cfg.package}/bin/alacritty --config-file /etc/xdg/alacritty.yml "$@"
+        ${cfg.package}/bin/alacritty --config-file /etc/xdg/alacritty.toml "$@"
         '';
     in mkOption {
       type = types.package;
       readOnly = true;
       default = wrapped;
-      description = "The wrapped package that reads configuration from /etc/xdg/alacritty.yml .";
+      description = "The wrapped package that reads configuration from /etc/xdg/alacritty.toml.";
     };
 
     settings = mkOption {
-      type = yamlFormat.type;
-      default = {
-        live_config_reload = true;
-        window.padding = { x = 4; y = 2; };
-        window.dynamic_padding = true;
-        window.decorations = "none";
-        scrolling.history = 65536;
-        colors.primary.background = "#121212";
-        colors.primary.foreground = "#cacaca";
-        colors.normal.black = "#1c1c1c";
-        colors.bright.black = "#4d4d4d";
-        colors.normal.red = "#d81860";
-        colors.bright.red = "#f00060";
-        colors.normal.green = "#b7ce42";
-        colors.bright.green = "#bde077";
-        colors.normal.yellow = "#fea63c";
-        colors.bright.yellow = "#ffe863";
-        colors.normal.blue = "#66aabb";
-        colors.bright.blue = "#aaccbb";
-        colors.normal.magneta = "#b7416e";
-        colors.bright.magneta = "#bb4466";
-        colors.normal.cyan = "#5e7175";
-        colors.bright.cyan = "#a3babf";
-        colors.normal.white = "#ddeedd";
-        colors.bright.white = "#6c887a";
-        font.normal.family = "Hack Nerd Font Mono";
-        font.normal.style = "Regular";
-        font.bold.style = "Bold";
-        font.italic.style = "Italic";
-        font.bold_italic.style = "Bold Italic";
-      };
-      example = literalExpression ''
-        {
-          window.dimensions = {
-            lines = 3;
-            columns = 200;
-          };
-          key_bindings = [
-            {
-              key = "K";
-              mods = "Control";
-              chars = "\\x0c";
-            }
-          ];
-        }
-      '';
+      type = types.str;
+      default = ''
+        live_config_reload = true
+
+        [colors.bright]
+        black = "#4d4d4d"
+        blue = "#aaccbb"
+        cyan = "#a3babf"
+        green = "#bde077"
+        magenta = "#bb4466"
+        red = "#f00060"
+        white = "#6c887a"
+        yellow = "#ffe863"
+
+        [colors.normal]
+        black = "#1c1c1c"
+        blue = "#66aabb"
+        cyan = "#5e7175"
+        green = "#b7ce42"
+        magenta = "#b7416e"
+        red = "#d81860"
+        white = "#ddeedd"
+        yellow = "#fea63c"
+
+        [colors.primary]
+        background = "#121212"
+        foreground = "#cacaca"
+
+        [font]
+        size = 11
+
+        [font.bold]
+        family = "Hack Nerd Font Mono"
+        style = "Bold"
+
+        [font.bold_italic]
+        family = "Hack Nerd Font Mono"
+        style = "Bold Italic"
+
+        [font.italic]
+        family = "Hack Nerd Font Mono"
+        style = "Italic"
+
+        [font.normal]
+        family = "Hack Nerd Font Mono"
+        style = "Regular"
+
+        [scrolling]
+        history = 65536
+
+        [window]
+        decorations = "none"
+        dynamic_padding = true
+
+        [window.padding]
+        x = 4
+        y = 2
+        '';
       description = ''
         Configuration written to
-        <filename>/etc/xdg/alacritty.yml</filename>. See
-        <link xlink:href="https://github.com/alacritty/alacritty/blob/master/alacritty.yml"/>
+        <filename>/etc/xdg/alacritty.toml</filename>. See
+        <link xlink:href="https://github.com/alacritty/alacritty/blob/master/alacritty.toml"/>
         for the default configuration.
       '';
     };
@@ -86,12 +97,8 @@ in {
   config = mkIf cfg.enable {
     environment.systemPackages = [ cfg.finalPackage ];
     environment.sessionVariables.TERMINAL = lib.mkDefault "${cfg.finalPackage}/bin/alacritty";
-    environment.etc."xdg/alacritty.yml" = mkIf (cfg.settings != {}) {
-      # TODO: Replace by the generate function but need to figure out how to
-      # handle the escaping first.
-      #
-      # source = yamlFormat.generate "alacritty.yml" cfg.settings;
-      text = replaceStrings [ "\\\\" ] [ "\\" ] (builtins.toJSON cfg.settings);
+    environment.etc."xdg/alacritty.toml" = mkIf (cfg.settings != {}) {
+      text = cfg.settings;
     };
   };
 }
