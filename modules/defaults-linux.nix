@@ -204,7 +204,7 @@ with lib;
       Unit.Description = "Apple AirPlay";
       Unit.After = [ "network.target" "avahi-daemon.service" ];
       Install.WantedBy = [ "multi-user.target" ];
-      Service.ExecStart = "${pkgs.shairport-sync}/bin/shairport-sync -v -o pw";
+      Service.ExecStart = "${pkgs.shairport-sync}/bin/shairport-sync -v -o pw -a '%u@%H (%%v, %v)'";
       Service.Restart = "on-failure";
     };
   }) (filterAttrs (n: v: n != "root") users);
