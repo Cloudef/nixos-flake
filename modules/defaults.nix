@@ -37,8 +37,10 @@ with lib;
 
   # Home stuff that works everywhere
   home-manager.users = let
-    rootConfig = config;
-  in mapAttrs (user: params: { config, pkgs, ... }: {
+    prefix = if (pkgs.stdenv.isLinux) then "/home" else "/Users";
+  in mapAttrs (user: params: { config, pkgs, ... }: let
+    homeDir = "${prefix}/${user}";
+  in {
     home.stateVersion = "23.05";
     home.file.".ssh/authorized_keys".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/authorized_keys";
     home.file.".ssh/id_rsa.pub".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/public_key";
@@ -58,7 +60,8 @@ with lib;
       alias dev="cd $HOME/dev"
       '';
     services.syncthing.enable = true;
-    services.syncthing.extraOptions = [ "--home=misc/syncthing" ];
+    services.syncthing.extraOptions = [ "--home=${homeDir}/misc/syncthing" ];
+    home.file."misc/.keep".text = "";
   }) users;
 
   fonts = let
