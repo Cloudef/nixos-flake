@@ -20,6 +20,9 @@ with lib;
     ripgrep
   ];
 
+  # Lets not use vim tabs
+  # https://joshldavis.com/2014/04/05/vim-tab-madness-buffers-vs-tabs/
+
   home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: {
     programs.neovim.enable = true;
     programs.neovim.viAlias = true;
@@ -65,22 +68,6 @@ with lib;
         })
         (lazyPlugin "tpope/vim-rsi" {})
         (lazyPlugin "farmergreg/vim-lastplace" {})
-        (lazyPlugin "moll/vim-bbye" {
-          init = ''
-            vim.cmd [[
-              fun! QuitIfLast()
-                  execute 'Bdelete'
-                  let bufcnt = len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
-                  if bufcnt < 1
-                      echo 'shutting everything down'
-                      execute 'quit!'
-                  endif
-              endfun
-              cnoreabbrev wq w<bar>:call QuitIfLast()<CR>
-              cnoreabbrev  q       :call QuitIfLast()<CR>
-            ]]
-            '';
-        })
         (lazyPlugin "echasnovski/mini.nvim" {
           deps = [
             (lazyPlugin "nvim-treesitter/nvim-treesitter" { opts = ""; })
@@ -343,6 +330,12 @@ with lib;
       set noswapfile
       set background=dark
 
+      function SetTab(var1)
+        let level=a:var1
+        execute "set softtabstop=".level
+        execute "set shiftwidth=".level
+      endfunction
+
       " Change tab settings
       nnoremap <silent> :8t :call SetTab(8)<CR>
       nnoremap <silent> :4t :call SetTab(4)<CR>
@@ -373,6 +366,22 @@ with lib;
       autocmd BufEnter * execute "chdir ".escape(expand("%:p:h"), ' \\/.*$^~[]#')
       " Remove any trailing whitespace that is in the file
       autocmd BufRead,BufWrite * if ! &bin | silent! %s/\s\+$//ge | endif
+
+      function! CloseBufferOrVim(force=${"''"})
+        if len(filter(range(1, bufnr('$')), 'buflisted(v:val)')) == 1
+          exec ("quit" . a:force)
+          quit
+        else
+          exec ("bdelete" . a:force)
+        endif
+      endfunction
+
+      " sanity
+      cnoreabbrev wq! w<bar>:call CloseBufferOrVim('!')<CR>
+      cnoreabbrev wq  w<bar>:call CloseBufferOrVim()<CR>
+      cnoreabbrev  q!       :call CloseBufferOrVim('!')<CR>
+      cnoreabbrev  q        :call CloseBufferOrVim()<CR>
+      cnoreabbrev tabe edit
       '';
   }) (filterAttrs (n: v: n != "root") users);
 }
