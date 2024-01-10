@@ -57,6 +57,8 @@ with lib;
       alias rm="rm -v"
       alias dev="cd $HOME/dev"
       '';
+    services.syncthing.enable = true;
+    services.syncthing.extraOptions = [ "--home=misc/syncthing" ];
   }) users;
 
   fonts = let
