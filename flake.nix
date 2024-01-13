@@ -7,7 +7,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    zig.url = "github:Cloudef/nix-zig-stdenv";
+    zig.url = "github:Cloudef/zig2nix";
     zig.inputs.nixpkgs.follows = "nixpkgs";
     zls.url = "github:zigtools/zls";
     zls.inputs.nixpkgs.follows = "nixpkgs";

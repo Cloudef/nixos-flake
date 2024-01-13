@@ -4,7 +4,7 @@ with lib;
   # XXX: mode does not exist on darwin
   # environment.etc."xdg/zls.json".mode = "0444";
   environment.etc."xdg/zls.json".text = let
-    zig = inputs.zig.versions.${pkgs.system}.master;
+    zig = inputs.zig.packages.${pkgs.system}.zig.master;
   in ''
     {
       "zig_exe_path": "${zig}/bin/zig",
