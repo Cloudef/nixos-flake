@@ -253,7 +253,7 @@ with lib;
               config = ''
                 require("lazy-lsp").setup({
                   excluded_servers = {
-                    "ccls", "sqls",
+                    "ccls", "sqls", "yamlls", "docker_compose_language_service"
                   },
                   default_config = {
                     capabilities = require('cmp_nvim_lsp').default_capabilities(),
