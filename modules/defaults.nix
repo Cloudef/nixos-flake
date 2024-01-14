@@ -72,6 +72,7 @@ with lib;
     packages = packages;
   } else {
     # darwin hasn't yet migrated to the new syntax
+    fontDir.enable = true;
     fonts = packages;
   };
 
