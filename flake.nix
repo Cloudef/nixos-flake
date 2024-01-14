@@ -17,8 +17,8 @@
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     eww.url = "github:elkowar/eww";
     eww.inputs.nixpkgs.follows = "nixpkgs";
-    local-daemon.url = "github:Cloudef/local-daemon";
-    local-daemon.inputs.nixpkgs.follows = "nixpkgs";
+    pid-defer.url = "github:Cloudef/pid-defer";
+    pid-defer.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, nix-darwin, ... }: {
@@ -43,9 +43,9 @@
       in nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
         specialArgs = let
-          local-daemon = self.inputs.local-daemon.packages.${system}.default;
+          pid-defer = self.inputs.pid-defer.packages.${system}.default;
         in {
-          inherit users mainUser local-daemon;
+          inherit users mainUser pid-defer;
           inherit (self) inputs;
         };
         modules = [

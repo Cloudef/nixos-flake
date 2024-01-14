@@ -1,4 +1,4 @@
-{ config, lib, pkgs, local-daemon, ... }:
+{ config, lib, pkgs, pid-defer, ... }:
 with lib;
 # XXX: https://github.com/ValveSoftware/steam-for-linux/issues/9705
 let
@@ -94,12 +94,12 @@ let
   in pkgs.writeShellApplication {
     name = "steam-gamescope";
 
-    runtimeInputs = with pkgs; [ local-daemon procps coreutils inotify-tools gnugrep gnused file gamemode steam-mod steam-mod.run gamescope mangohud ];
+    runtimeInputs = with pkgs; [ pid-defer procps coreutils inotify-tools gnugrep gnused file gamemode steam-mod steam-mod.run gamescope mangohud ];
     text = let
       # TODO: extest needs parent wayland display passed
       payload = pkgs.writeScript "payload" ''
         export GAMESCOPE_WAYLAND_DISPLAY=$WAYLAND_DISPLAY
-        local-daemon $$ mangoapp
+        defer $$ mangoapp
         unset WAYLAND_DISPLAY NIXOS_OZONE_WL
         export WAYLAND_DISPLAY="$ORIGINAL_WAYLAND_DISPLAY"
         export LD_PRELOAD=${extest}/lib/libextest.so
@@ -127,12 +127,12 @@ let
         (grep -rlF '/home/deck/' "$HOME"/.steam/deckyloader/plugins || true) | while read -r path; do patch_plug "$path"; done
 
         mkfifo "$tmpdir"/inotify.fifo
-        local-daemon $$ inotifywait --monitor -e create -e modify -e attrib -qr "$HOME"/.steam/deckyloader --exclude "$HOME"/.steam/deckyloader/services -o "$tmpdir"/inotify.fifo
+        defer $$ inotifywait --monitor -e create -e modify -e attrib -qr "$HOME"/.steam/deckyloader --exclude "$HOME"/.steam/deckyloader/services -o "$tmpdir"/inotify.fifo
 
         # has to be a copy, symlink makes PluginLoader look up files from wrong directory
         rm -f "$HOME"/.steam/deckyloader/services/PluginLoader
         cp -f ${deckyloader} "$HOME"/.steam/deckyloader/services/PluginLoader
-        (cd "$HOME"/.steam/deckyloader/services; local-daemon $$ steam-run ./PluginLoader &> PluginLoader.log)
+        (cd "$HOME"/.steam/deckyloader/services; defer $$ steam-run ./PluginLoader &> PluginLoader.log)
 
         # hack to automatically patch plugins and manage perms
         set +e
@@ -164,7 +164,7 @@ let
       echo "${deckyloader-version}" > "$HOME"/.steam/deckyloader/services/.loader.version
       touch "$HOME"/.steam/steam/.cef-enable-remote-debugging
       chmod -R u=rwX,go=rX "$HOME"/.steam/deckyloader
-      local-daemon $$ bash ${plugin-patcher}
+      defer $$ bash ${plugin-patcher}
 
       ${gs-env-vars "no_display"}
 
@@ -190,11 +190,11 @@ let
   # NOTE: Japanese locale by default!
   proton = pkgs.writeShellApplication {
     name = "proton";
-    runtimeInputs = with pkgs; [ local-daemon gamemode gamescope steam-mod.run mangohud ];
+    runtimeInputs = with pkgs; [ pid-defer gamemode gamescope steam-mod.run mangohud ];
     text = let
       # both proton's and gamescope's cleanup aren't very good so this deals with all that
       payload = pkgs.writeScript "payload" ''
-        local-daemon $$ mangoapp
+        defer $$ mangoapp
         steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" waitforexitandrun "$@"
         '';
     in ''
