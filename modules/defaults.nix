@@ -53,6 +53,7 @@ with lib;
     programs.git.extraConfig.safe.directory = "*";
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
+      source (nix-autoenv fish-setup | psub)
       alias ls="${pkgs.coreutils}/bin/ls -lAh --group-directories-first --color=auto"
       alias mv="mv -v"
       alias cp="cp -v"
@@ -108,6 +109,7 @@ with lib;
         '';
     };
   in with pkgs; [
+    inputs.nix-autoenv.packages.${system}.default
     vimo
     nrun
     psmenu

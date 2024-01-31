@@ -19,6 +19,8 @@
     eww.inputs.nixpkgs.follows = "nixpkgs";
     pid-defer.url = "github:Cloudef/pid-defer";
     pid-defer.inputs.nixpkgs.follows = "nixpkgs";
+    nix-autoenv.url = "github:Cloudef/nix-autoenv";
+    nix-autoenv.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, nix-darwin, ... }: {
