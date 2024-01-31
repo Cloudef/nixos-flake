@@ -53,6 +53,7 @@ with lib;
     programs.git.extraConfig.safe.directory = "*";
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
+      set -gx NIX_AUTOENV_AUTO 1
       source (nix-autoenv fish-setup | psub)
       alias ls="${pkgs.coreutils}/bin/ls -lAh --group-directories-first --color=auto"
       alias mv="mv -v"
