@@ -3,6 +3,11 @@ with lib;
 {
   imports = [ ./neovim.nix ];
 
+  # Override bemenu
+  nixpkgs.overlays = [(final: prev: {
+    bemenu = inputs.bemenu.packages.${pkgs.system}.default;
+  })];
+
   # Sorry Stallman, gotta play em gayms
   nixpkgs.config.allowUnfree = true;
 
