@@ -15,7 +15,7 @@
     hyprland.inputs.nixpkgs.follows = "nixpkgs";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
-    eww.url = "github:elkowar/eww";
+    eww.url = "github:elkowar/eww?rev=d96586c209cad2c1098a4caa42133329bef852e8";
     eww.inputs.nixpkgs.follows = "nixpkgs";
     pid-defer.url = "github:Cloudef/pid-defer";
     pid-defer.inputs.nixpkgs.follows = "nixpkgs";

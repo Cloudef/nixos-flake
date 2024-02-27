@@ -293,10 +293,6 @@ with lib;
               deps = [
                 (lazyPlugin "neovim/nvim-lspconfig" {})
                 (lazyPlugin "hrsh7th/cmp-nvim-lsp" { opts = ""; })
-                (lazyPlugin "ziglang/zig.vim" {
-                  fts = [ "zig" "zir" ];
-                  init = "vim.cmd [[ au BufRead,BufNewFile *.zon setfiletype zig ]]";
-                })
                 (lazyPlugin "DingDean/wgsl.vim" {})
                 (lazyPlugin "cespare/vim-toml" {})
                 (lazyPlugin "hashivim/vim-terraform" {})
@@ -316,6 +312,13 @@ with lib;
             vim.cmd [[ autocmd BufEnter,BufWrite,BufRead * set noro ]]
             '';
         })
+        (lazyPlugin "sbdchd/neoformat" {
+          init = ''
+            vim.cmd [[ autocmd BufWritePre *.js Neoformat ]]
+            vim.cmd [[ autocmd BufWritePre *.ts Neoformat ]]
+            vim.cmd [[ autocmd BufWritePre *.svelte Neoformat ]]
+            '';
+        })
       ];
     in [{
       plugin = pkgs.vimPlugins.lazy-nvim;
@@ -327,6 +330,7 @@ with lib;
         '';
     }];
     programs.neovim.extraConfig = ''
+      let g:zig_fmt_parse_errors=0
       set noswapfile
       set background=dark
 

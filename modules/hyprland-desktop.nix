@@ -585,7 +585,7 @@ in {
         accel_profile = flat
         sensitivity = 0.1
         repeat_rate = 50
-        repeat_delay 85
+        repeat_delay = 250
         scroll_method = on_button_down
       }
 

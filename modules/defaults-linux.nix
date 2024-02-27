@@ -156,7 +156,7 @@ with lib;
     firefox
     obs-studio
     scanmem
-    blender
+    # blender
     krita
     webcord
     zathura
