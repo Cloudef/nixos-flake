@@ -84,22 +84,24 @@ with lib;
   services.pipewire.jack.enable = true;
   services.pipewire.wireplumber.enable = true;
 
-  environment.etc."wireplumber/bluetooth.lua.d/51-bluez-config.lua".text = ''
-    bluez_monitor.properties["bluez5.codecs"] = "[ sbc sbc_xq aac ldac aptx aptx_hd ]"
-    '';
-
-  environment.etc."pipewire/pipewire.conf.d/99-custom.conf".text = ''
+  services.pipewire.extraConfig.pipewire = {
     context.properties = {
-      default.clock.allowed-rates = [ 44100 48000 ]
-    }
-    '';
+      default.clock.allowed-rates = [ 44100 48000 ];
+    };
+  };
 
-  environment.etc."pipewire/pipewire-pulse.d/99-custom.conf".text = ''
+  services.pipewire.extraConfig.pipewire-pulse = {
     pulse.cmd = [
-      { cmd = "load-module" args = "module-combine-sink" }
-      { cmd = "load-module" args = "module-switch-on-connect" }
-    ]
-    '';
+      { cmd = "load-module"; args = "module-combine-sink"; }
+      { cmd = "load-module"; args = "module-switch-on-connect"; }
+    ];
+  };
+
+  services.pipewire.wireplumber.configPackages = [
+    (pkgs.writeTextDir "share/wireplumber/bluetooth.lua.d/51-bluez-config.lua" ''
+      bluez_monitor.properties["bluez5.codecs"] = "[ sbc sbc_xq aac ldac aptx aptx_hd ]"
+      '')
+  ];
 
   programs.adb.enable = true;
 

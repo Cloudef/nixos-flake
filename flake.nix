@@ -13,9 +13,7 @@
     zls.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland";
     hyprland.inputs.nixpkgs.follows = "nixpkgs";
-    rust-overlay.url = "github:oxalica/rust-overlay";
-    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
-    eww.url = "github:elkowar/eww?rev=d96586c209cad2c1098a4caa42133329bef852e8";
+    eww.url = "github:w-lfchen/eww?rev=da058c1af2d40d3cd2cf2a681d4d5a9f1ec411d3";
     eww.inputs.nixpkgs.follows = "nixpkgs";
     pid-defer.url = "github:Cloudef/pid-defer";
     pid-defer.inputs.nixpkgs.follows = "nixpkgs";

@@ -8,7 +8,7 @@ in {
 
     package = mkOption {
       type = types.package;
-      default = pkgs.eww-wayland;
+      default = pkgs.eww;
       defaultText = literalExpression "pkgs.eww";
       description = "The Eww package to install.";
     };
@@ -41,7 +41,6 @@ in {
 
   config = mkIf cfg.enable {
     nixpkgs.overlays = [
-      inputs.rust-overlay.overlays.default
       inputs.eww.overlays.default
     ];
     environment.systemPackages = [ cfg.finalPackage ];
