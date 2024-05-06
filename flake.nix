@@ -16,7 +16,6 @@
     eww.url = "github:w-lfchen/eww?rev=da058c1af2d40d3cd2cf2a681d4d5a9f1ec411d3";
     eww.inputs.nixpkgs.follows = "nixpkgs";
     pid-defer.url = "github:Cloudef/pid-defer";
-    pid-defer.inputs.nixpkgs.follows = "nixpkgs";
     nix-autoenv.url = "github:Cloudef/nix-autoenv";
     nix-autoenv.inputs.nixpkgs.follows = "nixpkgs";
     bemenu.url = "github:Cloudef/bemenu";
@@ -33,7 +32,7 @@
         };
         nix = {
           uid = 1000;
-          groups = [ "wheel" "input" "dialout" "adbusers" "corectrl" ];
+          groups = [ "wheel" "input" "dialout" "adbusers" "corectrl" "docker" ];
           git.name = "Jari Vetoniemi";
           git.email = "jari.vetoniemi@cloudef.pw";
         };

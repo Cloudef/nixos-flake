@@ -85,11 +85,11 @@ let
   '';
 
   steam-gamescope = let
-    deckyloader-version = "v2.10.10";
+    deckyloader-version = "v2.11.1";
     deckyloader = pkgs.fetchurl {
       url = "https://github.com/SteamDeckHomebrew/decky-loader/releases/download/${deckyloader-version}/PluginLoader";
       executable = true;
-      hash = "sha256-cdtuTLx3uEWH3Zy/dgAyKbXLXxxyugI5sBna2DNbq2g=";
+      hash = "sha256-J1JtF3DqGHDTBVU88uHN5GCgnILDAJ+YOuaTJyLebNQ=";
     };
   in pkgs.writeShellApplication {
     name = "steam-gamescope";

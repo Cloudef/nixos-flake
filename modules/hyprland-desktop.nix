@@ -216,7 +216,6 @@ let
     };
 in {
   imports = [
-    inputs.hyprland.nixosModules.default
     ./alacritty.nix
     ./eww.nix
   ];
@@ -417,7 +416,11 @@ in {
 
     nix.settings.substituters = [ "https://hyprland.cachix.org" ];
     nix.settings.trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
-    nixpkgs.overlays = [ inputs.hyprland.overlays.default ] ++ optionals (cfg.debug) [(final: prev: {
+    nixpkgs.overlays = [(final: prev: {
+      # hyprland = inputs.hyprland.packages.${pkgs.system}.hyprland;
+      # hyprland-debug = inputs.hyprland.packages.${pkgs.system}.hyprland-debug;
+      # xdg-desktop-portal-hyprland = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    })] ++ optionals (cfg.debug) [(final: prev: {
       wlroots = prev.wlroots.overrideAttrs (_: { mesonBuildType = "debug"; dontStrip = true; hardeningDisable = [ "fortify" ]; });
     })];
 
@@ -695,15 +698,13 @@ in {
       ${cfg.extraConfig}
       '';
 
-    programs.xwayland.enable = true;
-    security.polkit.enable = true;
-    xdg.portal.enable = true;
-    xdg.portal.extraPortals = [
-      (inputs.hyprland.inputs.xdph.packages.${pkgs.system}.xdg-desktop-portal-hyprland.override {
+    programs.hyprland.enable = true;
+    programs.hyprland = {
+      package = cfg.finalPackage;
+      portalPackage = pkgs.xdg-desktop-portal-hyprland.override {
         hyprland = cfg.finalPackage;
-      })
-    ];
-    xdg.portal.config.common.default = "*";
+      };
+    };
 
     home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: let
       # Fix wayland madness, do not use overrideAttrs so we don't have to rebuild

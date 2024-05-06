@@ -10,7 +10,7 @@ with lib;
 
   boot.supportedFilesystems = [ "btrfs" "ntfs" "exfat" ];
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
-  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" ];
+  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "ecryptfs" ];
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
 
@@ -52,6 +52,9 @@ with lib;
   networking.firewall.enable = false;
 
   i18n.defaultLocale = "en_US.UTF-8";
+
+  virtualisation.docker.enable = true;
+  virtualisation.docker.storageDriver = "btrfs";
 
   users.mutableUsers = false;
   users.defaultUserShell = pkgs.fish;
@@ -149,16 +152,17 @@ with lib;
   environment.systemPackages = with pkgs; [
     sshfs-fuse
     coreutils
+    usbutils
     smartmontools
     lshw
     btdu
     lm_sensors
     blueberry
     pavucontrol
-    firefox
+    firefox-bin
     obs-studio
     scanmem
-    # blender
+    blender
     krita
     webcord
     zathura
@@ -173,7 +177,10 @@ with lib;
     qgnomeplatform-qt6
     adwaita-qt6
     gnome.zenity
+    ecryptfs
   ];
+
+  security.pam.enableEcryptfs = true;
 
   # needed for gtk crap
   programs.dconf.enable = true;
@@ -211,5 +218,5 @@ with lib;
     };
   }) (filterAttrs (n: v: n != "root") users);
 
-  environment.sessionVariables.BROWSER = "${pkgs.firefox}/bin/firefox";
+  environment.sessionVariables.BROWSER = "${pkgs.firefox-bin}/bin/firefox";
 }
