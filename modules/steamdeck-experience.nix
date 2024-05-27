@@ -159,12 +159,12 @@ let
       trap 'rm -rf "$tmpdir"' EXIT
 
       # deckyloader stuff
-      mkdir -p "$HOME"/.steam/deckyloader/services
-      mkdir -p "$HOME"/.steam/deckyloader/plugins
-      echo "${deckyloader-version}" > "$HOME"/.steam/deckyloader/services/.loader.version
-      touch "$HOME"/.steam/steam/.cef-enable-remote-debugging
-      chmod -R u=rwX,go=rX "$HOME"/.steam/deckyloader
-      defer $$ bash ${plugin-patcher}
+      # mkdir -p "$HOME"/.steam/deckyloader/services
+      # mkdir -p "$HOME"/.steam/deckyloader/plugins
+      # echo "${deckyloader-version}" > "$HOME"/.steam/deckyloader/services/.loader.version
+      # touch "$HOME"/.steam/steam/.cef-enable-remote-debugging
+      # chmod -R u=rwX,go=rX "$HOME"/.steam/deckyloader
+      # defer $$ bash ${plugin-patcher}
 
       ${gs-env-vars "no_display"}
 
@@ -181,7 +181,7 @@ let
         --steam -- ${payload} &> "$HOME"/.steam/deckyloader/services/gamescope.log
 
       # PluginLoader does not play nicely with SIGTERM
-      pgrep '^PluginLoader' | while read -r pid; do kill -SIGKILL "$pid" || true; done
+      pkill -9 PluginLoader
       # Try cleanup proton incase gamescope window was closed
       pkill -P "$BASHPID" explorer.exe
       '';

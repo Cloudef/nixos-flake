@@ -3,12 +3,8 @@ with lib;
 {
   # XXX: mode does not exist on darwin
   # environment.etc."xdg/zls.json".mode = "0444";
-  environment.etc."xdg/zls.json".text = let
-    zig = inputs.zig.packages.${pkgs.system}.zig.master.bin;
-  in ''
+  environment.etc."xdg/zls.json".text = ''
     {
-      "zig_exe_path": "${zig}/bin/zig",
-      "zig_lib_path": "${zig}/lib",
       "warn_style": true,
       "highlight_global_var_declarations": true,
       "include_at_in_builtins": true,
@@ -31,7 +27,7 @@ with lib;
     programs.neovim.defaultEditor = true;
     programs.neovim.plugins = let
       # TODO: write small program that converts JSON to Lua table, then we can use Nix natively to configure neovim plugins.
-      lazyPlugin = shortUrl: { lazy ? false, enabled ? true, deps ? [], opts ? null, config ? null, init ? null, fts ? null, event ? null }: ''
+      lazyPlugin = shortUrl: { lazy ? false, enabled ? true, deps ? [], opts ? null, config ? null, init ? null, fts ? null, event ? null, main ? null }: ''
         {
           "${shortUrl}",
           lazy = ${if lazy then "true" else "false"},
@@ -54,6 +50,8 @@ with lib;
           ft = { ${concatMapStringsSep "," (x: ''"${x}"'') fts} },
         '' + optionalString (event != null) ''
           event = "${event}",
+        '' + optionalString (main != null) ''
+          main = "${main}",
         '' + ''
         }
         '';
@@ -135,15 +133,14 @@ with lib;
               ];
             })
             (lazyPlugin "lukas-reineke/indent-blankline.nvim" {
-              opts = ''
-                space_char_blankline = " ",
-                show_current_context = true,
-                show_current_context_start = true,
-                '';
+              main = "ibl";
               init = ''
                 vim.opt.list = true
                 vim.opt.listchars:append "eol:↴"
                 vim.cmd [[ set ts=4 sw=4 et ]]
+                require("ibl").setup({
+                  indent = { char = "┆" },
+                })
                 '';
               deps = [
                 (lazyPlugin "NMAC427/guess-indent.nvim" {

@@ -141,5 +141,6 @@ with lib;
     ffmpeg
     yt-dlp
     mpv
+    nix-tree
   ];
 }

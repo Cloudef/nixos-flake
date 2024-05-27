@@ -7,12 +7,9 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    zig.url = "github:Cloudef/zig2nix";
-    zig.inputs.nixpkgs.follows = "nixpkgs";
     zls.url = "github:zigtools/zls";
     zls.inputs.nixpkgs.follows = "nixpkgs";
-    hyprland.url = "github:hyprwm/Hyprland";
-    hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    hyprland.url = "git+https://github.com/hyprwm/Hyprland.git?submodules=1";
     eww.url = "github:w-lfchen/eww?rev=da058c1af2d40d3cd2cf2a681d4d5a9f1ec411d3";
     eww.inputs.nixpkgs.follows = "nixpkgs";
     pid-defer.url = "github:Cloudef/pid-defer";

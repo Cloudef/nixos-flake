@@ -416,13 +416,6 @@ in {
 
     nix.settings.substituters = [ "https://hyprland.cachix.org" ];
     nix.settings.trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
-    nixpkgs.overlays = [(final: prev: {
-      # hyprland = inputs.hyprland.packages.${pkgs.system}.hyprland;
-      # hyprland-debug = inputs.hyprland.packages.${pkgs.system}.hyprland-debug;
-      # xdg-desktop-portal-hyprland = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
-    })] ++ optionals (cfg.debug) [(final: prev: {
-      wlroots = prev.wlroots.overrideAttrs (_: { mesonBuildType = "debug"; dontStrip = true; hardeningDisable = [ "fortify" ]; });
-    })];
 
     environment.systemPackages = let
       spacefm = pkgs.writeShellApplication {
@@ -598,7 +591,10 @@ in {
         border_size = 0
         col.active_border = rgb(d81860)
         col.inactive_border = rgb(d81860)
-        cursor_inactive_timeout = 5
+      }
+
+      cursor {
+        inactive_timeout = 5
       }
 
       decoration {
@@ -698,12 +694,16 @@ in {
       ${cfg.extraConfig}
       '';
 
+    nixpkgs.overlays = [(final: prev: {
+      hyprland = inputs.hyprland.packages.${pkgs.system}.hyprland;
+      hyprland-debug = inputs.hyprland.packages.${pkgs.system}.hyprland-debug;
+      xdg-desktop-portal-hyprland = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    })];
+
     programs.hyprland.enable = true;
     programs.hyprland = {
       package = cfg.finalPackage;
-      portalPackage = pkgs.xdg-desktop-portal-hyprland.override {
-        hyprland = cfg.finalPackage;
-      };
+      portalPackage = pkgs.xdg-desktop-portal-hyprland;
     };
 
     home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: let
