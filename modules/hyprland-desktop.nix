@@ -115,7 +115,7 @@ let
       while read -r _ event _ type num; do
         test "$(eww ping)" = "pong" || exit 1
         # https://github.com/hyprwm/Hyprland/issues/2695
-        test -e "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
+        test -e "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
         case "$event" in
           "'new'")
             if [[ "$type" == "card" ]]; then
@@ -147,9 +147,9 @@ let
       hyprctl dispatch exec eww update workspace="$(hyprctl activeworkspace -j | jaq .id)" >/dev/null
       while true; do
         # https://github.com/hyprwm/Hyprland/issues/2695
-        test -e "/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
+        test -e "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock" || exit 1
         test "$(eww ping)" = "pong" || exit 1
-        socat -U -t 3600 - "UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while read -r line; do
+        socat -U -t 3600 - "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while read -r line; do
           event="''${line/>>*/}"
           args="''${line/*>>/}"
           # shellcheck disable=SC2034
