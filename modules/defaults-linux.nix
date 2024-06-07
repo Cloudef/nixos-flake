@@ -15,7 +15,11 @@ with lib;
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
 
   # Allow current console users to add virtual input devices
-  services.udev.extraRules = ''KERNEL=="uinput", TAG+="uaccess", OPTIONS+="static_node=uinput"'';
+  services.udev.extraRules = ''
+    KERNEL=="uinput", TAG+="uaccess", OPTIONS+="static_node=uinput"
+    ACTION=="add|change", KERNEL=="sd[a-z]|nvme[0-9]n[1-9]", ATTR{queue/scheduler}="kyber"
+    ACTION=="add|change", KERNEL=="loop[0-9]", ATTR{queue/scheduler}="kyber"
+  '';
 
   services.fwupd.enable = true;
   services.irqbalance.enable = true;
@@ -34,7 +38,13 @@ with lib;
   zramSwap.enable = true;
   zramSwap.memoryPercent = 150;
   zramSwap.algorithm = "zstd";
-  boot.kernel.sysctl."vm_swappiness" = 200;
+  boot.kernel.sysctl."vm.swappiness" = 200;
+  boot.kernel.sysctl."vm.dirty_background_bytes" = 134217728;
+  boot.kernel.sysctl."vm.dirty_background_ratio" = 0;
+  boot.kernel.sysctl."vm.dirty_bytes" = 268435456;
+  boot.kernel.sysctl."vm.dirty_expire_centisecs" = 3000;
+  boot.kernel.sysctl."vm.dirty_ratio" = 0;
+  boot.kernel.sysctl."vm.dirtytime_expire_seconds" = 1800;
 
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "schedutil";
@@ -139,6 +149,8 @@ with lib;
   fonts.fontconfig.subpixel.rgba = "rgb";
   fonts.fontconfig.subpixel.lcdfilter = "default";
 
+  programs.wireshark.enable = true;
+  programs.wireshark.package = pkgs.wireshark;
   programs.corectrl.enable = true;
   programs.corectrl.gpuOverclock.enable = true;
   programs.gamemode.enable = true;
@@ -169,6 +181,7 @@ with lib;
     transmission-gtk
     powertop
     iotop
+    btop
     config.boot.kernelPackages.perf
     perf-tools
     hicolor-icon-theme
