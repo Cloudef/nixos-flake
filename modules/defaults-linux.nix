@@ -49,9 +49,7 @@ with lib;
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "schedutil";
 
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true; # X86 specific ?
+  hardware.graphics.enable = true;
   hardware.bluetooth.enable = true;
   hardware.opentabletdriver.enable = true;
 
