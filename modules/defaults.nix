@@ -23,12 +23,10 @@ with lib;
   nix.settings.substituters = [
     "https://cache.nixos.org"
     "https://nix-community.cachix.org"
-    "https://aws-lambda-rust.cachix.org"
   ];
   nix.settings.trusted-public-keys = [
     "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
     "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    "aws-lambda-rust.cachix.org-1:bnY1QkUrQuSIHHfc3TJ1KL6xLvjQEKyHuQgweJl57RY="
   ];
 
   # We in Tokyo
@@ -71,17 +69,9 @@ with lib;
     home.file."misc/.keep".text = "";
   }) users;
 
-  fonts = let
-    packages = with pkgs; [
-      nerdfonts
-    ];
-  in if (pkgs.stdenv.isLinux) then {
-    packages = packages;
-  } else {
-    # darwin hasn't yet migrated to the new syntax
-    fontDir.enable = true;
-    fonts = packages;
-  };
+  fonts.packages = with pkgs; [
+    nerdfonts
+  ];
 
   environment.systemPackages = let
     vimo = pkgs.writeShellApplication {
