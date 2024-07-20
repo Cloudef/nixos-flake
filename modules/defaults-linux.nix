@@ -177,7 +177,7 @@ with lib;
     krita
     webcord
     zathura
-    transmission-gtk
+    transmission_4-gtk
     powertop
     iotop
     btop
@@ -188,7 +188,7 @@ with lib;
     adwaita-qt
     qgnomeplatform-qt6
     adwaita-qt6
-    gnome.zenity
+    zenity
     ecryptfs
   ];
 
