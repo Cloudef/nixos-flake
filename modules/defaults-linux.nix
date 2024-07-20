@@ -109,11 +109,17 @@ with lib;
     ];
   };
 
-  services.pipewire.wireplumber.configPackages = [
-    (pkgs.writeTextDir "share/wireplumber/bluetooth.lua.d/51-bluez-config.lua" ''
-      bluez_monitor.properties["bluez5.codecs"] = "[ sbc sbc_xq aac ldac aptx aptx_hd ]"
-      '')
-  ];
+  services.pipewire.wireplumber.extraConfig.bluetoothEnhancements = {
+    "monitor.bluez.properties" = {
+      "bluez5.enable-sbc-xq" = true;
+      "bluez5.enable-msbc" = true;
+      "bluez5.enable-hw-volume" = true;
+      "bluez5.roles" = [ "a2dp_sink" "a2dp_source" ];
+    };
+    "wireplumber.settings" = {
+      "bluetooth.autoswitch-to-headset-profile" = false;
+    };
+  };
 
   programs.adb.enable = true;
 
