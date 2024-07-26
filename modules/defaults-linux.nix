@@ -11,6 +11,7 @@ with lib;
   boot.supportedFilesystems = [ "btrfs" "ntfs" "exfat" ];
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "ecryptfs" ];
+  boot.blacklistedKernelModules = [ "xpad" ];
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
 
