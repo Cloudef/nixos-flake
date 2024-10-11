@@ -8,6 +8,7 @@ with lib;
 
   nix.gc.dates = "weekly";
 
+  boot.loader.grub.configurationLimit = 5;
   boot.supportedFilesystems = [ "btrfs" "ntfs" "exfat" ];
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
   boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "ecryptfs" ];
@@ -213,10 +214,16 @@ with lib;
     gtk.iconTheme.name = "Papirus-Dark";
     gtk.iconTheme.package = pkgs.papirus-icon-theme;
     gtk.theme.name = "Adwaita";
-    gtk.cursorTheme.name = pkgs.phinger-cursors.pname;
-    gtk.cursorTheme.package = pkgs.phinger-cursors;
     gtk.gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk.gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
+
+    home.pointerCursor = {
+      name = "phinger-cursors-dark";
+      package = pkgs.phinger-cursors;
+      size = 24;
+      gtk.enable = true;
+      x11.enable = true;
+    };
 
     i18n.inputMethod.enabled = "fcitx5";
     i18n.inputMethod.fcitx5.addons = with pkgs; [
@@ -227,7 +234,7 @@ with lib;
     services.udiskie.enable = true;
     services.udiskie.tray = "never";
 
-    services.easyeffects.enable = true;
+    # services.easyeffects.enable = true;
     systemd.user.services.shairport-sync = {
       Unit.Description = "Apple AirPlay";
       Unit.After = [ "network.target" "avahi-daemon.service" ];

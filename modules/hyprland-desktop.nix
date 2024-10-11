@@ -6,20 +6,6 @@ with lib;
 let
   cfg = config.programs.hyprland-desktop;
 
-  # Workarounding wayland insanity https://github.com/swaywm/sway/issues/7645
-  accepthack = pkgs.stdenv.mkDerivation {
-    name = "accepthack";
-
-    src = fetchGit {
-      url = "https://gitlab.com/retropc/accepthack.git";
-      rev = "b3fe022a2ed1d3513888468f5808ee9cff8e7955";
-    };
-
-    installPhase = ''
-      install -Dm644 accepthack.so $out/lib/accepthack.so
-    '';
-  };
-
   default-terminal-cmd = [ "${config.programs.alacritty.finalPackage}/bin/alacritty" ];
 
   terminal-autocd-cmd = let
@@ -409,9 +395,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # for accepthack / wayland workaround
-    boot.kernel.sysctl."net.core.wmem_max" = 16777216;
-
     programs.alacritty = mkIf (cfg.terminalCmd == default-terminal-cmd) { enable = true; };
 
     nix.settings.substituters = [ "https://hyprland.cachix.org" ];
@@ -700,27 +683,19 @@ in {
       xdg-desktop-portal-hyprland = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
     })];
 
-    programs.hyprland.enable = true;
     programs.hyprland = {
+      enable = true;
+      xwayland.enable = true;
       package = cfg.finalPackage;
       portalPackage = pkgs.xdg-desktop-portal-hyprland;
     };
 
-    home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: let
-      # Fix wayland madness, do not use overrideAttrs so we don't have to rebuild
-      wrapped = with pkgs; writeShellApplication {
-        name = "hyprland-launch";
-        text = ''
-          export PATH="''${PATH:-}:${makeBinPath [stdenv.cc binutils pciutils]}"
-          ${getLib stdenv.cc.libc}/lib/ld-linux-x86-64.so.2 --preload ${accepthack}/lib/accepthack.so ${cfg.finalPackage}/bin/.Hyprland-wrapped "$@"
-          '';
-      };
-    in {
+    home-manager.users = mapAttrs (user: params: { config, pkgs, ... }: {
       programs.fish.interactiveShellInit = mkIf cfg.fishAutoStart ''
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
           /run/current-system/systemd/bin/systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
-          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${wrapped}/bin/hyprland-launch --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
+          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
         end
         '';
