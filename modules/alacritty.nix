@@ -29,6 +29,7 @@ in {
     settings = mkOption {
       type = types.str;
       default = ''
+        [general]
         live_config_reload = true
 
         [colors.bright]

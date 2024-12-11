@@ -20,7 +20,6 @@ let
   };
 
   steam-mod = (pkgs.steam.override {
-    privateTmp = false;
     extraPkgs = pkgs: with pkgs; [
       # steamdeck first boot wizard skip
       (writeScriptBin "steamos-polkit-helpers/steamos-update" ''

@@ -588,12 +588,14 @@ in {
           passes = 3
           new_optimizations = true
         }
-        drop_shadow = true
-        shadow_ignore_window = true
-        shadow_offset = 0 5
-        shadow_range = 50
-        shadow_render_power = 3
-        col.shadow = rgba(00000099)
+        shadow {
+          enabled = true
+          ignore_window = true
+          offset = 0 5
+          range = 50
+          render_power = 3
+          color = rgba(00000099)
+        }
         dim_inactive = true
         dim_strength = 0.20
       }

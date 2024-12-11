@@ -70,7 +70,7 @@ with lib;
   }) users;
 
   fonts.packages = with pkgs; [
-    nerdfonts
+    nerd-fonts.hack
   ];
 
   environment.systemPackages = let
