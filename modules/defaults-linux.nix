@@ -198,6 +198,8 @@ with lib;
     adwaita-qt6
     zenity
     ecryptfs
+    gdb
+    poop
   ];
 
   security.pam.enableEcryptfs = true;
