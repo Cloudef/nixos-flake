@@ -13,8 +13,8 @@ with lib;
 
   # Flakes system
   nix.settings.extra-experimental-features = [ "nix-command" "flakes" ];
-  nix.settings.auto-optimise-store = true;
   nix.settings.sandbox = true;
+  nix.optimise.automatic = true;
   nix.registry = lib.mapAttrs (_: value: { flake = value; }) inputs;
   nix.nixPath = (lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry);
   nix.gc.automatic = true;
