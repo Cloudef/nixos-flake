@@ -12,11 +12,11 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "Supreeeme";
       repo = pname;
-      rev = "45966909c055ab08fd7db41f12242bd6b5ad7d08";
-      hash = "sha256-bCZesSKgkarofFAVd51gfZTGKlBCkoLTmQave8krO5A=";
+      rev = "1a419a1691c6accaafef6cfc962a06712d4658e9";
+      hash = "sha256-q0BqvdIdcUARGmaPOnzPVLtcWFHJeZ9t2jcfYxS0KTk=";
     };
 
-    cargoHash = "sha256-Tvw40zhJBC/6vNrJ/D5o8+Pav/bLae5NjLoOp1KSzS8=";
+    cargoHash = "sha256-X8o3vozmTqjD9Tec0I7Lr+eXQm1ioLJ/V8tiDhr2cug=";
   };
 
   steam-mod = (pkgs.steam.override {
