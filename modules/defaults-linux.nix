@@ -16,6 +16,11 @@ with lib;
   boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
 
+  boot.binfmt.emulatedSystems = [
+    "aarch64-linux"
+    "riscv64-linux"
+  ];
+
   # Allow current console users to add virtual input devices
   services.udev.extraRules = ''
     KERNEL=="uinput", TAG+="uaccess", OPTIONS+="static_node=uinput"
