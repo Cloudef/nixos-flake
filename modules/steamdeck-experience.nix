@@ -186,17 +186,25 @@ let
       '';
   };
 
-  # NOTE: Japanese locale by default!
   proton = pkgs.writeShellApplication {
     name = "proton";
-    runtimeInputs = with pkgs; [ pid-defer gamemode gamescope steam-mod.run mangohud ];
-    text = let
-      # both proton's and gamescope's cleanup aren't very good so this deals with all that
-      payload = pkgs.writeScript "payload" ''
+    runtimeInputs = with pkgs; [ pid-defer steam-mod.run mangohud ];
+    text = ''
+      if [[ "''${STEAM_USE_MANGOAPP:-0}" == 1 ]]; then
         defer $$ mangoapp
-        steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" waitforexitandrun "$@"
-        '';
-    in ''
+      fi
+      mkdir -p "''${PROTONPREFIX:-$HOME/.local/share/proton}"
+      export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
+      export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
+      steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" waitforexitandrun "$@"
+    '';
+  };
+
+  # NOTE: Japanese locale by default!
+  proton-gs = pkgs.writeShellApplication {
+    name = "proton-gs";
+    runtimeInputs = with pkgs; [ gamemode gamescope proton ];
+    text = ''
       tmpdir="$(mktemp -d)"
       trap 'rm -rf "$tmpdir"' EXIT
       ${gs-env-vars ''
@@ -214,9 +222,6 @@ let
         cpu_power
       ''}
       GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:-"-S integer -F nearest"}"
-      mkdir -p "''${PROTONPREFIX:-$HOME/.local/share/proton}"
-      export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
-      export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export LANG="''${LC_ALL:-ja_JP.utf8}"
       # shellcheck disable=SC2086
       gamemoderun gamescope --fullscreen \
@@ -226,12 +231,54 @@ let
         --max-scale ${toString cfg.maxScale} \
         --hide-cursor-delay ${toString cfg.hideCursorDelay} \
         --fade-out-duration ${toString cfg.fadeOutDuration} \
-        $GAMESCOPE_SCALER -- ${payload} "$@"
-      # Cleanup proton incase gamescope window was closed
-      # https://github.com/ValveSoftware/gamescope/issues/885
-      # https://github.com/ValveSoftware/gamescope/issues/777
-      WINEPREFIX="$STEAM_COMPAT_DATA_PATH/pfx" \
-        steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/files/bin/wineserver" -k
+        $GAMESCOPE_SCALER -- proton "$@"
+      '';
+  };
+
+  wine = pkgs.writeShellApplication {
+    name = "wine";
+    runtimeInputs = with pkgs; [ pid-defer wineWowPackages.stagingFull mangohud ];
+    text = ''
+      if [[ "''${STEAM_USE_MANGOAPP:-0}" == 1 ]]; then
+        defer $$ mangoapp
+      fi
+      defer $$ wineserver -k
+      wine "$@"
+    '';
+  };
+
+  # NOTE: Japanese locale by default!
+  wine-gs = pkgs.writeShellApplication {
+    name = "wine-gs";
+    runtimeInputs = with pkgs; [ gamemode gamescope wine ];
+    text = ''
+      tmpdir="$(mktemp -d)"
+      trap 'rm -rf "$tmpdir"' EXIT
+      ${gs-env-vars ''
+        horizontal
+        legacy_layout=0
+        table_columns=20
+        cpu_stats
+        gpu_stats
+        ram
+        fps
+        frametime=0
+        frame_timing=1
+        hud_no_margin
+        gpu_power
+        cpu_power
+      ''}
+      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:-"-S integer -F nearest"}"
+      export LANG="''${LC_ALL:-ja_JP.utf8}"
+      # shellcheck disable=SC2086
+      gamemoderun gamescope --fullscreen \
+        -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
+        -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
+        -o ${toString cfg.unfocusedFramerate} \
+        --max-scale ${toString cfg.maxScale} \
+        --hide-cursor-delay ${toString cfg.hideCursorDelay} \
+        --fade-out-duration ${toString cfg.fadeOutDuration} \
+        $GAMESCOPE_SCALER -- wine "$@"
       '';
   };
 in {
@@ -272,8 +319,12 @@ in {
   config = mkIf cfg.enable {
     environment.systemPackages = [
       steam-mod
+      steam-mod.run
       steam-gamescope
       proton
+      proton-gs
+      wine
+      wine-gs
     ];
   };
 }
