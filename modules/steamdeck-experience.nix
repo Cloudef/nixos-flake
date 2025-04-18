@@ -16,7 +16,7 @@ let
       hash = "sha256-q0BqvdIdcUARGmaPOnzPVLtcWFHJeZ9t2jcfYxS0KTk=";
     };
 
-    cargoHash = "sha256-X8o3vozmTqjD9Tec0I7Lr+eXQm1ioLJ/V8tiDhr2cug=";
+    cargoHash = "sha256-J9HuZwZ3UYyW2unFxBeap80yPCvdVGQ7pfsdI9qU3QE=";
   };
 
   steam-mod = (pkgs.steam.override {
