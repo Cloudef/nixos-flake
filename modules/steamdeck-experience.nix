@@ -33,6 +33,10 @@ let
       '')
       gamemode
     ];
+    extraLibraries = pkgs: with pkgs; [
+      alsa-lib
+      pulseaudio
+    ];
   });
 
   gs-env-vars = mangohud: ''
