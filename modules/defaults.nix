@@ -55,8 +55,11 @@ with lib;
     programs.git.enable = true;
     programs.git.userName = params.git.name;
     programs.git.userEmail = params.git.email;
-    programs.git.extraConfig.init.defaultBranch = "master";
-    programs.git.extraConfig.safe.directory = "*";
+    programs.git.extraConfig = {
+      init.defaultBranch = "master";
+      safe.directory = "*";
+      url."ssh://git@github.com".insteadOf = "https://github.com";
+    };
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
       set -gx NIX_AUTOENV_AUTO 1
