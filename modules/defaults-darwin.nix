@@ -1,4 +1,4 @@
-{ config, lib, pkgs, inputs, users, ... }:
+{ config, lib, pkgs, inputs, users, mainUser, ... }:
 # TODO: install alacritty.info (currently done manually)
 #       sudo tic -e alacritty,alacritty-direct alacritty.info
 #       https://raw.githubusercontent.com/alacritty/alacritty/master/extra/alacritty.info
@@ -15,8 +15,10 @@ with lib;
     home = "/Users/${user}";
   }) (filterAttrs (n: v: n != "root") users);
 
-  security.pam.enableSudoTouchIdAuth = true;
-  services.nix-daemon.enable = true;
+  system.primaryUser = mainUser;
+
+  nix.enable = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
   nix.gc.interval = { Weekday = 0; Hour = 0; Minute = 0; };
 
   # neovim.nix aliases do not seem to apply, so fix here
