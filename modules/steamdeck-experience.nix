@@ -20,6 +20,7 @@ let
   };
 
   steam-mod = (pkgs.steam.override {
+    extraEnv.STEAM_EXTRA_COMPAT_TOOLS_PATHS = lib.makeSearchPathOutput "steamcompattool" "" [ pkgs.proton-ge-bin ];
     extraPkgs = pkgs: with pkgs; [
       # steamdeck first boot wizard skip
       (writeScriptBin "steamos-polkit-helpers/steamos-update" ''
@@ -31,11 +32,6 @@ let
         #!${pkgs.stdenv.shell}
         kill $PPID
       '')
-      gamemode
-    ];
-    extraLibraries = pkgs: with pkgs; [
-      alsa-lib
-      pulseaudio
     ];
   });
 
@@ -200,7 +196,8 @@ let
       mkdir -p "''${PROTONPREFIX:-$HOME/.local/share/proton}"
       export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
       export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
-      steam-run "$HOME/.steam/steam/steamapps/common/Proton - Experimental/proton" waitforexitandrun "$@"
+      STEAM_RUNTIME="''${STEAM_RUNTIME:-sniper}"
+      PROTON_ENABLE_WAYLAND=1 steam-run "''${STEAM_COMPAT_CLIENT_INSTALL_PATH}/steamapps/common/SteamLinuxRuntime_''${STEAM_RUNTIME}/run" -- "${pkgs.proton-ge-bin.steamcompattool}/proton" waitforexitandrun "$@"
     '';
   };
 
@@ -236,53 +233,6 @@ let
         --hide-cursor-delay ${toString cfg.hideCursorDelay} \
         --fade-out-duration ${toString cfg.fadeOutDuration} \
         $GAMESCOPE_SCALER -- proton "$@"
-      '';
-  };
-
-  wine = pkgs.writeShellApplication {
-    name = "wine";
-    runtimeInputs = with pkgs; [ pid-defer wineWowPackages.stagingFull mangohud ];
-    text = ''
-      if [[ "''${STEAM_USE_MANGOAPP:-0}" == 1 ]]; then
-        defer $$ mangoapp
-      fi
-      defer $$ wineserver -k
-      wine "$@"
-    '';
-  };
-
-  # NOTE: Japanese locale by default!
-  wine-gs = pkgs.writeShellApplication {
-    name = "wine-gs";
-    runtimeInputs = with pkgs; [ gamemode gamescope wine ];
-    text = ''
-      tmpdir="$(mktemp -d)"
-      trap 'rm -rf "$tmpdir"' EXIT
-      ${gs-env-vars ''
-        horizontal
-        legacy_layout=0
-        table_columns=20
-        cpu_stats
-        gpu_stats
-        ram
-        fps
-        frametime=0
-        frame_timing=1
-        hud_no_margin
-        gpu_power
-        cpu_power
-      ''}
-      GAMESCOPE_SCALER="''${GAMESCOPE_SCALER:-"-S integer -F nearest"}"
-      export LANG="''${LC_ALL:-ja_JP.utf8}"
-      # shellcheck disable=SC2086
-      gamemoderun gamescope --fullscreen \
-        -W ${toString cfg.resolution.width} -H ${toString cfg.resolution.height} \
-        -w ${toString cfg.internalResolution.width} -h ${toString cfg.internalResolution.height} \
-        -o ${toString cfg.unfocusedFramerate} \
-        --max-scale ${toString cfg.maxScale} \
-        --hide-cursor-delay ${toString cfg.hideCursorDelay} \
-        --fade-out-duration ${toString cfg.fadeOutDuration} \
-        $GAMESCOPE_SCALER -- wine "$@"
       '';
   };
 in {
@@ -327,8 +277,7 @@ in {
       steam-gamescope
       proton
       proton-gs
-      wine
-      wine-gs
+      pkgs.wineWow64Packages.staging
     ];
   };
 }

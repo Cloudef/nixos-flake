@@ -8,12 +8,14 @@ with lib;
 
   nix.gc.dates = "weekly";
 
-  boot.loader.grub.configurationLimit = 5;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
+  boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "btrfs" "ntfs" "exfat" ];
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
-  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" "ecryptfs" ];
+  boot.kernelModules = [ "uinput" "xpadneo" "hid-nintendo" ];
   boot.blacklistedKernelModules = [ "xpad" ];
-  boot.kernelParams = [ "mitigations=off" "preempt=full" "snd_hda_intel.power_save=0" ];
+  boot.kernelParams = [ "mitigations=off" "preempt=full" ];
   boot.extraModulePackages = with config.boot.kernelPackages; [ xpadneo ];
 
   boot.binfmt.emulatedSystems = [
@@ -30,13 +32,6 @@ with lib;
 
   services.fwupd.enable = true;
   services.irqbalance.enable = true;
-
-  services.smartd.enable = true;
-  services.fstrim.enable = true;
-  services.btrfs.autoScrub = mkIf (config.fileSystems."/".fsType == "btrfs") {
-    enable = true;
-    fileSystems = [ "/" ];
-  };
 
   services.udisks2.enable = true;
 
@@ -131,7 +126,6 @@ with lib;
   };
 
   programs.nix-ld.enable = true;
-  programs.adb.enable = true;
 
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
@@ -152,7 +146,7 @@ with lib;
   fonts.packages = with pkgs; [
     noto-fonts
     noto-fonts-cjk-sans
-    noto-fonts-emoji
+    noto-fonts-color-emoji
   ];
 
   # This part is hw dependant really, move if more than 1 linux machine in future
@@ -167,7 +161,6 @@ with lib;
   programs.wireshark.enable = true;
   programs.wireshark.package = pkgs.wireshark;
   programs.corectrl.enable = true;
-  programs.corectrl.gpuOverclock.enable = true;
   programs.gamemode.enable = true;
   programs.gamemode.enableRenice = true;
   programs.gamemode.settings.general.inhibit_screensaver = 0;
@@ -175,6 +168,23 @@ with lib;
   programs.gamemode.settings.gpu.apply_gpu_optimisations = "accept-responsibility";
   programs.gamemode.settings.gpu.gpu_device = 0;
   programs.gamemode.settings.gpu.amd_performance_level = "high";
+
+  environment.persistence."/nix/persist" = {
+    enable = true;
+    hideMounts = true;
+    directories = [
+      "/etc/nixos"
+      "/var/log"
+      "/var/lib/bluetooth"
+      "/var/lib/nixos"
+      "/var/lib/dbus"
+      "/var/lib/systemd/coredump"
+      "/etc/NetworkManager/system-connections"
+    ];
+    files = [
+      "/etc/machine-id"
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     sshfs-fuse
@@ -197,7 +207,7 @@ with lib;
     powertop
     iotop
     btop
-    config.boot.kernelPackages.perf
+    perf
     perf-tools
     hicolor-icon-theme
     qgnomeplatform
@@ -205,12 +215,10 @@ with lib;
     qgnomeplatform-qt6
     adwaita-qt6
     zenity
-    ecryptfs
     gdb
     poop
+    android-tools
   ];
-
-  security.pam.enableEcryptfs = true;
 
   # needed for gtk crap
   programs.dconf.enable = true;
@@ -235,7 +243,8 @@ with lib;
       x11.enable = true;
     };
 
-    i18n.inputMethod.enabled = "fcitx5";
+    i18n.inputMethod.enable = true;
+    i18n.inputMethod.type = "fcitx5";
     i18n.inputMethod.fcitx5.addons = with pkgs; [
       fcitx5-mozc
       fcitx5-gtk

@@ -3,6 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.nixpkgs.follows = "";
+    impermanence.inputs.home-manager.follows = "";
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
@@ -10,8 +13,7 @@
     zls.url = "github:zigtools/zls";
     zls.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "git+https://github.com/hyprwm/Hyprland.git?submodules=1";
-    eww.url = "github:w-lfchen/eww?rev=4cac40de6d7132b6cbfa761dd83948219b3b90ba";
-    eww.inputs.nixpkgs.follows = "nixpkgs";
+    eww.url = "github:elkowar/eww";
     pid-defer.url = "github:Cloudef/pid-defer";
     nix-autoenv.url = "github:Cloudef/nix-autoenv";
     nix-autoenv.inputs.nixpkgs.follows = "nixpkgs";
@@ -19,7 +21,7 @@
     bemenu.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, ... }: {
+  outputs = { self, nixpkgs, impermanence, nix-darwin, ... }: {
     nixosConfigurations = let
       users = {
         root = {
@@ -48,19 +50,13 @@
         };
         modules = [
           ./modules/system/${system}-${cpu}/configuration.nix
+          impermanence.nixosModules.impermanence
           ./modules/defaults-linux.nix
           ./modules/hyprland-desktop.nix
           ./modules/steamdeck-experience.nix
-          ./modules/sunshine.nix
-          ({config, pkgs, ...}: {
+          ({...}: {
             programs.hyprland-desktop.enable = true;
             programs.steamdeck-experience.enable = true;
-            programs.sunshine.enable = true;
-            programs.sunshine.users = [ "nix" ];
-            programs.sunshine.apps = [
-              { name = "Desktop"; image-path = "${pkgs.sunshine}/assets/desktop-alt.png"; }
-              { name = "Steam"; cmd = "${config.programs.hyprland-desktop.finalPackage}/bin/hyprctl dispatch exec steam-gamescope"; image-path = "${pkgs.sunshine}/assets/steam.png"; }
-            ];
           })
         ];
       };

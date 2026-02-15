@@ -2,18 +2,23 @@
 with lib;
 {
   imports = [ ./hardware-configuration.nix ];
-  fileSystems."/".options = [ "ssd" "compress=zstd" "noatime" ];
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
   boot.extraModulePackages = with config.boot.kernelPackages; [ zenpower ];
   boot.kernelModules = [ "nct6775" "zenpower" ];
-  boot.kernelParams = [ "amd_pstate=active" ];
+  boot.kernelParams = [ "amd_pstate=active" "snd_hda_intel.power_save=0" ];
   boot.blacklistedKernelModules = [ "k10temp" ];
 
   hardware.cpu.amd.updateMicrocode = true;
+  hardware.amdgpu.overdrive.enable = true;
 
   console.font = "Lat2-Terminus16";
   console.keyMap = "fi";
+
+  services.smartd.enable = true;
+  services.fstrim.enable = true;
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [ "/nix" "/home" ];
+  };
 
   systemd.mounts = [
     {

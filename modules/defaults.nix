@@ -1,8 +1,6 @@
 { config, lib, pkgs, inputs, users, ... }:
 with lib;
 {
-  imports = [ ./neovim.nix ];
-
   # Override bemenu
   nixpkgs.overlays = [(final: prev: {
     bemenu = inputs.bemenu.packages.${pkgs.system}.default;
@@ -48,14 +46,16 @@ with lib;
     homeDir = "${prefix}/${user}";
   in {
     home.stateVersion = "23.05";
+    xdg.enable = true;
+    home.sessionVariables.ZIG_LOCAL_CACHE_DIR = "${config.home.homeDirectory}/.cache/zig";
     home.file.".ssh/authorized_keys".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/authorized_keys";
     home.file.".ssh/id_rsa.pub".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/public_key";
     home.file.".ssh/id_rsa".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/private_key";
     programs.nix-index.enable = true;
     programs.git.enable = true;
-    programs.git.userName = params.git.name;
-    programs.git.userEmail = params.git.email;
-    programs.git.extraConfig = {
+    programs.git.settings = {
+      user.name = params.git.name;
+      user.email = params.git.email;
       init.defaultBranch = "master";
       safe.directory = "*";
       url."ssh://git@github.com".insteadOf = "https://github.com";
@@ -70,6 +70,19 @@ with lib;
       alias rm="rm -v"
       alias dev="cd $HOME/dev"
       '';
+    programs.helix = {
+      enable = true;
+      package = pkgs.evil-helix;
+      defaultEditor = true;
+      settings = {
+        theme = "ayu_evolve";
+        editor = {
+          cursorline = true;
+          auto-completion = true;
+          auto-format = true;
+        };
+      };
+    };
     services.syncthing.enable = true;
     services.syncthing.extraOptions = [ "--home=${homeDir}/misc/syncthing" ];
     home.file."misc/.keep".text = "";
@@ -78,6 +91,15 @@ with lib;
   fonts.packages = with pkgs; [
     nerd-fonts.hack
   ];
+
+  environment.etc."xdg/zls.json".text = ''
+  {
+    "warn_style": true,
+    "highlight_global_var_declarations": true,
+    "include_at_in_builtins": true,
+    "enable_autofix": true
+  }
+  '';
 
   environment.systemPackages = let
     vimo = pkgs.writeShellApplication {
@@ -112,6 +134,7 @@ with lib;
     };
   in with pkgs; [
     inputs.nix-autoenv.packages.${system}.default
+    inputs.zls.packages.${system}.default
     vimo
     nrun
     psmenu
@@ -138,5 +161,6 @@ with lib;
     yt-dlp
     mpv
     nix-tree
+    evil-helix
   ];
 }

@@ -400,13 +400,7 @@ in {
     nix.settings.substituters = [ "https://hyprland.cachix.org" ];
     nix.settings.trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
 
-    environment.systemPackages = let
-      spacefm = pkgs.writeShellApplication {
-        name = "spacefm";
-        runtimeInputs = with pkgs; [ spaceFM unzip unrar p7zip ];
-        text = ''GDK_BACKEND=x11 exec spacefm "$@"'';
-      };
-    in with pkgs; [
+    environment.systemPackages = with pkgs; [
       cfg.cursorThemePackage
       cfg.finalPackage
       hyprshot
@@ -414,7 +408,6 @@ in {
       imv
       wbg
       ja-en-translator
-      spacefm
     ];
 
     # TODO: temps are hardcoded
@@ -448,7 +441,7 @@ in {
                   :value {EWW_RAM.used_mem_perc}
                   :onchange "")
           (metric :label "DSK"
-                  :value {EWW_DISK["/"].used_perc}
+                  :value {EWW_DISK["/nix"].used_perc}
                   :onchange "")
           (metric :label "VOL"
                   :value {volume}
@@ -549,6 +542,7 @@ in {
       exec-once = ${pkgs.wbg}/bin/wbg ${cfg.wallpaper}
       exec-once = sleep 1 && ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && /run/current-system/systemd/bin/systemctl --user start hyprland-session.target
       exec-once = ${config.programs.eww.finalPackage}/bin/eww open bar
+      exec-once = ${pkgs.xrandr}/bin/xrandr --output ${cfg.primaryMonitor.adapter} --primary
       exec = /run/current-system/systemd/bin/systemctl --user restart pipewire-event-handler.service
       exec = /run/current-system/systemd/bin/systemctl --user restart hyprland-event-handler.service
     '' + concatStringsSep "\n" (
@@ -620,16 +614,16 @@ in {
       }
 
       # Shadow on floating only
-      windowrulev2 = noshadow, floating:0
+      windowrule = no_shadow on, match:float no
 
       # Firefox PiP
-      windowrulev2 = float, title:^(Picture-in-Picture)$
-      windowrulev2 = pin, title:^(Picture-in-Picture)$
-      windowrulev2 = float, title:^(Open Files)$
+      windowrule = float on, match:title ^(Picture-in-Picture)$
+      windowrule = pin on, match:title ^(Picture-in-Picture)$
+      windowrule = float on, match:title ^(Open Files)$
 
       # Gamescope
-      windowrulev2 = fullscreen,class:(.gamescope-wrapped)
-      windowrulev2 = tile,class:(.gamescope-wrapped)
+      windowrule = fullscreen on, match:class (.gamescope-wrapped)
+      windowrule = tile on, match:class (.gamescope-wrapped)
 
       bind = SUPER, Q, killactive,
       bind = SUPER SHIFT, F, fullscreen,
@@ -698,7 +692,7 @@ in {
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
           /run/current-system/systemd/bin/systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
-          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${cfg.finalPackage}/bin/Hyprland --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
+          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} ${cfg.finalPackage}/bin/start-hyprland -- --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
         end
         '';

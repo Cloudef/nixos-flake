@@ -23,7 +23,6 @@ with lib;
 
   # neovim.nix aliases do not seem to apply, so fix here
   programs.fish.interactiveShellInit = ''
-    alias vim="nvim"
     # TODO: we probably do not need this as nixpkgs already has flutter
     set PATH "$PATH:$HOME/dev/flutter/bin"
     '';
