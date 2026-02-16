@@ -1,6 +1,10 @@
 { config, lib, pkgs, inputs, users, ... }:
 with lib;
 {
+  imports = [
+    ./helix.nix
+  ];
+
   # Override bemenu
   nixpkgs.overlays = [(final: prev: {
     bemenu = inputs.bemenu.packages.${pkgs.system}.default;
@@ -32,6 +36,9 @@ with lib;
 
   # We in Tokyo
   time.timeZone = "Asia/Tokyo";
+
+  # Helix
+  programs.helix.enable = true;
 
   # FIISH
   programs.fish.enable = true;
@@ -70,19 +77,6 @@ with lib;
       alias rm="rm -v"
       alias dev="cd $HOME/dev"
       '';
-    programs.helix = {
-      enable = true;
-      package = pkgs.evil-helix;
-      defaultEditor = true;
-      settings = {
-        theme = "ayu_evolve";
-        editor = {
-          cursorline = true;
-          auto-completion = true;
-          auto-format = true;
-        };
-      };
-    };
     services.syncthing.enable = true;
     services.syncthing.extraOptions = [ "--home=${homeDir}/misc/syncthing" ];
     home.file."misc/.keep".text = "";
@@ -161,6 +155,5 @@ with lib;
     yt-dlp
     mpv
     nix-tree
-    evil-helix
   ];
 }
