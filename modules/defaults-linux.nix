@@ -66,7 +66,7 @@ with lib;
   i18n.defaultLocale = "en_US.UTF-8";
 
   virtualisation.docker.enable = true;
-  virtualisation.docker.storageDriver = "btrfs";
+  virtualisation.docker.storageDriver = "overlay2";
 
   users.mutableUsers = false;
   users.defaultUserShell = pkgs.fish;
@@ -178,6 +178,7 @@ with lib;
       "/var/lib/bluetooth"
       "/var/lib/nixos"
       "/var/lib/dbus"
+      "/var/lib/docker"
       "/var/lib/systemd/coredump"
       "/etc/NetworkManager/system-connections"
     ];
