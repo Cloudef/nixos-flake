@@ -10,7 +10,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    zls.url = "github:zigtools/zls";
+    zls.url = "github:zigtools/zls?ref=0.15.x";
     zls.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "git+https://github.com/hyprwm/Hyprland.git?submodules=1";
     eww.url = "github:elkowar/eww";
