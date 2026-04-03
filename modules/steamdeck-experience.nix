@@ -197,7 +197,7 @@ let
       export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
       export STEAM_COMPAT_DATA_PATH="''${PROTONPREFIX:-$HOME/.local/share/proton}"
       STEAM_RUNTIME="''${STEAM_RUNTIME:-sniper}"
-      PROTON_ENABLE_WAYLAND=1 steam-run "''${STEAM_COMPAT_CLIENT_INSTALL_PATH}/steamapps/common/SteamLinuxRuntime_''${STEAM_RUNTIME}/run" -- "${pkgs.proton-ge-bin.steamcompattool}/proton" waitforexitandrun "$@"
+      steam-run "''${STEAM_COMPAT_CLIENT_INSTALL_PATH}/steamapps/common/SteamLinuxRuntime_''${STEAM_RUNTIME}/run" -- "${pkgs.proton-ge-bin.steamcompattool}/proton" waitforexitandrun "$@"
     '';
   };
 
