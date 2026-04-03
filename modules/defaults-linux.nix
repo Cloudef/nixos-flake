@@ -195,7 +195,7 @@ with lib;
     lshw
     btdu
     lm_sensors
-    blueberry
+    blueman
     pavucontrol
     firefox-bin
     obs-studio
@@ -235,6 +235,7 @@ with lib;
     gtk.theme.name = "Adwaita";
     gtk.gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk.gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk.gtk4.theme = config.gtk.theme;
 
     home.pointerCursor = {
       name = "phinger-cursors-dark";

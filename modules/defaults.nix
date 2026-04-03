@@ -67,6 +67,7 @@ with lib;
       safe.directory = "*";
       url."ssh://git@github.com".insteadOf = "https://github.com";
     };
+    programs.git.signing.format = "openpgp";
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
       set -gx NIX_AUTOENV_AUTO 1
