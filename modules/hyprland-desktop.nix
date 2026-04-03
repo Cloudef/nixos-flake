@@ -630,7 +630,7 @@ in {
       bind = SUPER SHIFT, G, togglegroup,
       bind = SUPER SHIFT, N, changegroupactive, f
       bind = SUPER SHIFT, P, changegroupactive, b
-      bind = SUPER, R, togglesplit,
+      bind = SUPER, R, layoutmsg, togglesplit
       bind = SUPER, T, togglefloating,
       bind = SUPER, left, movefocus, l
       bind = SUPER, right, movefocus, r
