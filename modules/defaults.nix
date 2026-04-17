@@ -58,6 +58,7 @@ with lib;
     home.file.".ssh/authorized_keys".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/authorized_keys";
     home.file.".ssh/id_rsa.pub".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/public_key";
     home.file.".ssh/id_rsa".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/private_key";
+    home.file.".ssh/allowed_signers".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/secrets/${user}/allowed_signers";
     programs.nix-index.enable = true;
     programs.git.enable = true;
     programs.git.settings = {
@@ -67,7 +68,10 @@ with lib;
       safe.directory = "*";
       url."ssh://git@github.com".insteadOf = "https://github.com";
     };
-    programs.git.signing.format = "openpgp";
+    programs.git.signing.format = "ssh";
+    programs.git.signing.signByDefault = true;
+    programs.git.signing.key = "${config.home.homeDirectory}/.ssh/id_rsa.pub";
+    programs.git.extraConfig.gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
     programs.fish.enable = true;
     programs.fish.interactiveShellInit = ''
       set -gx NIX_AUTOENV_AUTO 1
