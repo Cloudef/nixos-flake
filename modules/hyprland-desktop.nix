@@ -692,7 +692,10 @@ in {
         if test -z "$WAYLAND_DISPLAY" -a "9$XDG_VTNR" -eq 91
           /run/current-system/systemd/bin/systemctl --user reset-failed
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
-          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} PROTON_ENABLE_WAYLAND=1 ${cfg.finalPackage}/bin/start-hyprland -- --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
+          WAYLAND_DEBUG=${if (cfg.debug) then "1" else "0"} \
+          PROTON_ENABLE_WAYLAND=1 \
+          WAYLANDDRV_PRIMARY_MONITOR=${cfg.primaryMonitor.adapter} \
+          ${cfg.finalPackage}/bin/start-hyprland -- --config /etc/xdg/hyprland.conf &> /tmp/hyprland.log
           /run/current-system/systemd/bin/systemctl --user stop hyprland-session.target
         end
         '';
